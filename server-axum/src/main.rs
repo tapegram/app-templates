@@ -173,8 +173,10 @@ async fn update_user_handler(
     let user: User = match users.get(&id) {
         Some(user) => user,
         None => {
-            println!("User not found");
-            panic!("User not found (TODO: put a real error message here!)");
+            return (
+                StatusCode::NOT_FOUND, 
+                Json(ErrorResponse { error: "User not found".to_string() })
+            ).into_response();
         },
     }.clone(); // Have to clone this otherwise we cant do a mutable borrow of users
 
