@@ -127,6 +127,7 @@ async fn main() {
 }
 
 async fn create_user_handler(
+    // Note the order of args does matter -- if you swap these two you get a really weird error that's hard to debug
     // Shared state injected by middleware
     Extension(state): Extension<SharedState>,
     // Json body from request
