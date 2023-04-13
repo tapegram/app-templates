@@ -168,22 +168,22 @@ async fn update_user_handler(
     Json(user_update): Json<UpdateUsersRequest>,
 ) -> Response {
     println!("UpdateUserId: {:?}", id);
-    let users = &state.read().unwrap().users;
+    let users = &mut state.write().unwrap().users;
 
-    let user: &User = match &users.get(&id) {
+    let user: User = match users.get(&id) {
         Some(user) => user,
         None => {
             println!("User not found");
             panic!("User not found (TODO: put a real error message here!)");
         },
-    };
+    }.clone(); // Have to clone this otherwise we cant do a mutable borrow of users
 
     println!("Found user: {:?}", user);
 
     // Write the user to the state
     // Need to stick a clone in to get the memory managed correctly.
     // If its the "same entity" then everything goes crazy after
-    state.write().unwrap().users.insert(
+    users.insert(
         user.id, 
         User {
             id: user.id,
