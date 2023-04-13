@@ -1,7 +1,7 @@
 use axum::{
-    routing::post,
+    routing::{post, put},
     Router, 
-    extract::Extension, 
+    extract::{Extension, Path}, 
     Json, 
     response::{Response, IntoResponse}, 
     // response::{Json, IntoResponse, Response},
@@ -25,13 +25,14 @@ struct CreateUserRequest {
 
 #[derive(Deserialize, Debug)]
 struct UpdateUsersRequest {
+    email: String,
     password: String,
     name: String,
 }
 
 #[derive(Serialize, Debug)]
 struct UserResponse {
-    id: i32,
+    id: u32,
     email: String,
     password: String,
     name: String,
@@ -57,7 +58,7 @@ struct ErrorResponse {
  * Core Models
  */
 
-type UserId = i32;
+type UserId = u32;
 
 #[derive(Debug, Deserialize, Clone, Eq, Hash, PartialEq)]
 struct User {
@@ -75,7 +76,7 @@ struct User {
  */
 #[derive(Default)]
 struct State {
-    users: HashMap<i32, User>,
+    users: HashMap<u32, User>,
 }
 
 // Wrapping the state in a shared type so it can be shared across threads
@@ -98,6 +99,12 @@ async fn main() {
      -d '{"email": "tapegram@gmail.com", "password": "password123", "name": "Tavish Pegram"}'
      */
     .route("/users", post(create_user_handler))
+    /*
+     curl -X PUT localhost:3000/users/3834503660 \
+     -H 'Content-Type:application/json' \
+     -d '{"email": "tapegram+updated@gmail.com", "password": "safepassword", "name": "Charizard"}'
+     */
+    .route("/users/:id", put(update_user_handler))
 
     .layer(
         // Use tower/tower-http middleware to inject our shared state into our routes
@@ -148,6 +155,51 @@ async fn create_user_handler(
         email: new_user.email,
         password: new_user.password,
         name: new_user.name,
+    };
+
+    (StatusCode::OK, Json(user_response)).into_response()
+}
+
+async fn update_user_handler(
+    // Shared state injected by middleware
+    Extension(state): Extension<SharedState>,
+    Path(id): Path<u32>,
+    // Json body from request
+    Json(user_update): Json<UpdateUsersRequest>,
+) -> Response {
+    println!("UpdateUserId: {:?}", id);
+    let users = &state.read().unwrap().users;
+
+    let user: &User = match &users.get(&id) {
+        Some(user) => user,
+        None => {
+            println!("User not found");
+            panic!("User not found (TODO: put a real error message here!)");
+        },
+    };
+
+    println!("Found user: {:?}", user);
+
+    // Write the user to the state
+    // Need to stick a clone in to get the memory managed correctly.
+    // If its the "same entity" then everything goes crazy after
+    state.write().unwrap().users.insert(
+        user.id, 
+        User {
+            id: user.id,
+            email: user_update.email.clone(),
+            password: user_update.password.clone(),
+            name: user_update.name.clone(),
+        }
+    );
+
+    println!("Updated user!");
+
+    let user_response = UserResponse {
+        id: user.id,
+        email: user_update.email,
+        password: user_update.password,
+        name: user_update.name,
     };
 
     (StatusCode::OK, Json(user_response)).into_response()
