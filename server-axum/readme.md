@@ -13,6 +13,6 @@ and then visit `http://localhost:3000`
 ## Todo
 
 - [x] Hello World
-- [] Request/Response types
+- [x] Request/Response types
 - [] Writing tests
 - [] Connecting to a DB
