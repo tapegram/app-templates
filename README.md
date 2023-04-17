@@ -9,4 +9,7 @@ exploring some different technologies
 
 ## Resources
 
+[Intro to Elm](https://guide.elm-lang.org/)
+[Rust Book](https://doc.rust-lang.org/book/)
 [Doc on how to write tests](https://github.com/tokio-rs/axum/discussions/555)
+[Helper to convert html to elm](https://html-to-elm.com/)

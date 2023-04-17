@@ -1,17 +1,11 @@
 module Main exposing (..)
 
 import Browser
-import Debug exposing (log)
 import Html exposing (button, div, input, table, td, text, th, thead, tr)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map4, string)
 import String exposing (fromInt, toInt)
-
-
-add : number -> number -> number
-add a b =
-    a + b
 
 
 init : () -> ( Model, Cmd Messages )
@@ -109,13 +103,6 @@ type Messages
 
 update : Messages -> Model -> ( Model, Cmd Messages )
 update msg model =
-    let
-        logmessage =
-            log "here" "Button Clicked"
-
-        logmessage2 =
-            log "model" model
-    in
     case model of
         Loaded state ->
             case msg of
@@ -123,10 +110,6 @@ update msg model =
                     ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
 
                 TextChanged newText ->
-                    let
-                        log3 =
-                            log "Entered Text" newText
-                    in
                     ( Loaded { state | inputValue = parseInput newText }
                     , Cmd.none
                     )
@@ -135,10 +118,6 @@ update msg model =
                     ( model, Cmd.none )
 
                 KeyPressed key ->
-                    let
-                        log4 =
-                            log "Key was pressed" key
-                    in
                     case key of
                         13 ->
                             ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
@@ -163,11 +142,7 @@ update msg model =
                         Ok users ->
                             ( Loaded { initState | users = users }, Cmd.none )
 
-                        Err err ->
-                            let
-                                logFailure =
-                                    log "failed to fetch users" err
-                            in
+                        Err _ ->
                             ( Failure, Cmd.none )
 
         Failure ->
@@ -185,7 +160,7 @@ parseInput text =
 
 
 subscriptions : Model -> Sub Messages
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
