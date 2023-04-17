@@ -1,6 +1,6 @@
 use axum::{
     extract::{Extension, Path},
-    http::StatusCode,
+    http::{Method, StatusCode},
     response::{IntoResponse, Response},
     routing::{post, put},
     Json, Router,
@@ -14,6 +14,7 @@ use std::{
 };
 use tower::ServiceBuilder;
 use tower_http::add_extension::AddExtensionLayer;
+use tower_http::cors::{Any, CorsLayer};
 
 /*
 Schema
@@ -119,6 +120,11 @@ async fn main() {
             // Based on example: https://github.com/tokio-rs/axum/blob/dea36db400f27c025b646e5720b9a6784ea4db6e/examples/key-value-store/src/main.rs
             ServiceBuilder::new()
                 .layer(AddExtensionLayer::new(SharedState::default()))
+                .layer(
+                    CorsLayer::new()
+                        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+                        .allow_origin(Any),
+                )
                 .into_inner(),
         );
 

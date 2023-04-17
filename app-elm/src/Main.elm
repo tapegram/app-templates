@@ -26,6 +26,7 @@ type alias State =
     , firstName : String
     , lastName : String
     , inputValue : Int
+    , users : List User
     }
 
 
@@ -35,6 +36,7 @@ initState =
     , firstName = "Kindson"
     , lastName = "Munonye"
     , inputValue = 0
+    , users = []
     }
 
 
