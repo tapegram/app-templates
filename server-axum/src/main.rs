@@ -1,21 +1,26 @@
 use axum::{
-    routing::{post, put},
-    Router, 
-    extract::{Extension, Path}, 
-    Json, 
-    response::{Response, IntoResponse}, 
+    extract::{Extension, Path},
     // response::{Json, IntoResponse, Response},
-    handler::Handler, http::StatusCode, 
+    handler::Handler,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::{get, post, put},
+    Json,
+    Router,
+};
+use rand::Rng;
+use serde::{Deserialize, Serialize};
+use std::{
+    collections::HashMap,
+    net::SocketAddr,
+    sync::{Arc, RwLock},
 };
 use tower::ServiceBuilder;
-use tower_http::add_extension::{AddExtensionLayer, AddExtension};
-use std::{net::SocketAddr, collections::HashMap, sync::{Arc, RwLock}};
-use serde::{Deserialize, Serialize};
-use rand::Rng;
+use tower_http::add_extension::AddExtensionLayer;
 
 /*
- Schema
- */
+Schema
+*/
 #[derive(Deserialize, Debug)]
 struct CreateUserRequest {
     email: String,
@@ -38,8 +43,8 @@ struct UserResponse {
     name: String,
 }
 
-impl From<User> for UserResponse {
-    fn from(user: User) -> Self {
+impl From<&User> for UserResponse {
+    fn from(user: &User) -> Self {
         UserResponse {
             id: user.id,
             email: user.email.to_string(),
@@ -70,9 +75,9 @@ struct User {
 
 /**
  * App State
- * 
+ *
  * Faking with just in memory stuff for now
- * 
+ *
  */
 #[derive(Default)]
 struct State {
@@ -92,28 +97,33 @@ async fn main() {
     // A closure or a function can be used as handler.
 
     let app = Router::new()
-
-    /*
-     curl -X POST localhost:3000/users \
-     -H 'Content-Type:application/json' \
-     -d '{"email": "tapegram@gmail.com", "password": "password123", "name": "Tavish Pegram"}'
-     */
-    .route("/users", post(create_user_handler))
-    /*
-     curl -X PUT localhost:3000/users/3834503660 \
-     -H 'Content-Type:application/json' \
-     -d '{"email": "tapegram+updated@gmail.com", "password": "safepassword", "name": "Charizard"}'
-     */
-    .route("/users/:id", put(update_user_handler))
-
-    .layer(
-        // Use tower/tower-http middleware to inject our shared state into our routes
-        // Based on example: https://github.com/tokio-rs/axum/blob/dea36db400f27c025b646e5720b9a6784ea4db6e/examples/key-value-store/src/main.rs
-        ServiceBuilder::new()
-        .layer(AddExtensionLayer::new(SharedState::default()))
-        .into_inner()
-    );
-
+        .route(
+            "/users",
+            /*
+            curl -X POST localhost:3000/users \
+            -H 'Content-Type:application/json' \
+            -d '{"email": "tapegram@gmail.com", "password": "password123", "name": "Tavish Pegram"}'
+            */
+            post(create_user_handler)
+                /*
+                curl -X GET localhost:3000/users \
+                -H 'Content-Type:application/json'
+                */
+                .get(get_users_handler),
+        )
+        /*
+        curl -X PUT localhost:3000/users/3834503660 \
+        -H 'Content-Type:application/json' \
+        -d '{"email": "tapegram+updated@gmail.com", "password": "safepassword", "name": "Charizard"}'
+        */
+        .route("/users/:id", put(update_user_handler))
+        .layer(
+            // Use tower/tower-http middleware to inject our shared state into our routes
+            // Based on example: https://github.com/tokio-rs/axum/blob/dea36db400f27c025b646e5720b9a6784ea4db6e/examples/key-value-store/src/main.rs
+            ServiceBuilder::new()
+                .layer(AddExtensionLayer::new(SharedState::default()))
+                .into_inner(),
+        );
 
     // Address that server will bind to.
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -124,6 +134,17 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+async fn get_users_handler(
+    // Shared state injected by middleware
+    Extension(state): Extension<SharedState>,
+) -> Response {
+    let users = &state.read().unwrap().users;
+    let users: Vec<User> = users.values().cloned().collect();
+
+    let responses: Vec<_> = users.iter().map(|user| UserResponse::from(user)).collect();
+    (StatusCode::OK, Json(responses)).into_response()
 }
 
 async fn create_user_handler(
@@ -149,7 +170,11 @@ async fn create_user_handler(
     // Write the user to the state
     // Need to stick a clone in to get the memory managed correctly.
     // If its the "same entity" then everything goes crazy after
-    state.write().unwrap().users.insert(new_user.id, new_user.clone());
+    state
+        .write()
+        .unwrap()
+        .users
+        .insert(new_user.id, new_user.clone());
 
     let user_response = UserResponse {
         id: new_user.id,
@@ -175,11 +200,15 @@ async fn update_user_handler(
         Some(user) => user,
         None => {
             return (
-                StatusCode::NOT_FOUND, 
-                Json(ErrorResponse { error: "User not found".to_string() })
-            ).into_response();
-        },
-    }.clone(); // Have to clone this otherwise we cant do a mutable borrow of users
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "User not found".to_string(),
+                }),
+            )
+                .into_response();
+        }
+    }
+    .clone(); // Have to clone this otherwise we cant do a mutable borrow of users
 
     println!("Found user: {:?}", user);
 
@@ -187,13 +216,13 @@ async fn update_user_handler(
     // Need to stick a clone in to get the memory managed correctly.
     // If its the "same entity" then everything goes crazy after
     users.insert(
-        user.id, 
+        user.id,
         User {
             id: user.id,
             email: user_update.email.clone(),
             password: user_update.password.clone(),
             name: user_update.name.clone(),
-        }
+        },
     );
 
     println!("Updated user!");
