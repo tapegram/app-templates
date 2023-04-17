@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Debug exposing (log)
-import Html exposing (button, div, input, text)
+import Html exposing (button, div, input, table, td, text, th, thead, tr)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map4, string)
@@ -55,6 +55,8 @@ view model =
                 , div [] []
                 , input [ onInput TextChanged ] []
                 , button [ onClick Add ] [ text "Add" ]
+                , div []
+                    [ viewUsers state.users ]
                 ]
 
         Loading ->
@@ -62,6 +64,32 @@ view model =
 
         Failure ->
             div [] [ text "Failed to load users" ]
+
+
+viewUsers : List User -> Html.Html Messages
+viewUsers users =
+    table []
+        (List.concat
+            [ [ thead []
+                    [ th [] [ text "Id" ]
+                    , th [] [ text "Name" ]
+                    , th [] [ text "Email" ]
+                    , th [] [ text "Password" ]
+                    ]
+              ]
+            , List.map toTableRow users
+            ]
+        )
+
+
+toTableRow : User -> Html.Html Messages
+toTableRow user =
+    tr []
+        [ td [] [ text (fromInt user.id) ]
+        , td [] [ text user.name ]
+        , td [] [ text user.email ]
+        , td [] [ text user.password ]
+        ]
 
 
 type alias Text =
@@ -132,8 +160,8 @@ update msg model =
 
                 GotUsers result ->
                     case result of
-                        Ok fullText ->
-                            ( Loaded initState, Cmd.none )
+                        Ok users ->
+                            ( Loaded { initState | users = users }, Cmd.none )
 
                         Err err ->
                             let
