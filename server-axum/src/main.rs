@@ -1,12 +1,9 @@
 use axum::{
     extract::{Extension, Path},
-    // response::{Json, IntoResponse, Response},
-    handler::Handler,
     http::StatusCode,
     response::{IntoResponse, Response},
-    routing::{get, post, put},
-    Json,
-    Router,
+    routing::{post, put},
+    Json, Router,
 };
 use rand::Rng;
 use serde::{Deserialize, Serialize};

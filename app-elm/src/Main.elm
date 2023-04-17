@@ -4,6 +4,8 @@ import Browser
 import Debug exposing (log)
 import Html exposing (button, div, input, text)
 import Html.Events exposing (onClick, onInput)
+import Http
+import Json.Decode exposing (Decoder, field, int, list, map4, string)
 import String exposing (fromInt, toInt)
 
 
@@ -12,16 +14,14 @@ add a b =
     a + b
 
 
-init : Model
-init =
-    { score = 0
-    , firstName = "Kindson"
-    , lastName = "Munonye"
-    , inputValue = 0
-    }
+init : () -> ( Model, Cmd Messages )
+init _ =
+    ( Loading
+    , getUsers
+    )
 
 
-type alias Model =
+type alias State =
     { score : Int
     , firstName : String
     , lastName : String
@@ -29,14 +29,37 @@ type alias Model =
     }
 
 
+initState : State
+initState =
+    { score = 0
+    , firstName = "Kindson"
+    , lastName = "Munonye"
+    , inputValue = 0
+    }
+
+
+type Model
+    = Loading
+    | Failure
+    | Loaded State
+
+
 view : Model -> Html.Html Messages
 view model =
-    div []
-        [ text (fromInt model.score)
-        , div [] []
-        , input [ onInput TextChanged ] []
-        , button [ onClick Add ] [ text "Add" ]
-        ]
+    case model of
+        Loaded state ->
+            div []
+                [ text (fromInt state.score)
+                , div [] []
+                , input [ onInput TextChanged ] []
+                , button [ onClick Add ] [ text "Add" ]
+                ]
+
+        Loading ->
+            div [] [ text "Loading..." ]
+
+        Failure ->
+            div [] [ text "Failed to load users" ]
 
 
 type alias Text =
@@ -51,9 +74,10 @@ type Messages
     = Add
     | TextChanged Text
     | KeyPressed Key
+    | GotUsers (Result Http.Error (List User))
 
 
-update : Messages -> Model -> Model
+update : Messages -> Model -> ( Model, Cmd Messages )
 update msg model =
     let
         logmessage =
@@ -62,28 +86,62 @@ update msg model =
         logmessage2 =
             log "model" model
     in
-    case msg of
-        Add ->
-            { model | score = model.score + model.inputValue }
+    case model of
+        Loaded state ->
+            case msg of
+                Add ->
+                    ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
 
-        TextChanged newText ->
-            let
-                log3 =
-                    log "Entered Text" newText
-            in
-            { model | inputValue = parseInput newText }
+                TextChanged newText ->
+                    let
+                        log3 =
+                            log "Entered Text" newText
+                    in
+                    ( Loaded { state | inputValue = parseInput newText }
+                    , Cmd.none
+                    )
 
-        KeyPressed key ->
-            let
-                log4 =
-                    log "Key was pressed" key
-            in
-            case key of
-                13 ->
-                    { model | score = model.score + model.inputValue }
+                GotUsers _ ->
+                    ( model, Cmd.none )
 
-                _ ->
-                    model
+                KeyPressed key ->
+                    let
+                        log4 =
+                            log "Key was pressed" key
+                    in
+                    case key of
+                        13 ->
+                            ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
+
+                        _ ->
+                            ( Loaded state, Cmd.none )
+
+        Loading ->
+            case msg of
+                -- ( model, Cmd.none )
+                Add ->
+                    Debug.todo "todo"
+
+                TextChanged _ ->
+                    Debug.todo "branch 'TextChanged _' not implemented"
+
+                KeyPressed _ ->
+                    Debug.todo "branch 'KeyPressed _' not implemented"
+
+                GotUsers result ->
+                    case result of
+                        Ok fullText ->
+                            ( Loaded initState, Cmd.none )
+
+                        Err err ->
+                            let
+                                logFailure =
+                                    log "failed to fetch users" err
+                            in
+                            ( Failure, Cmd.none )
+
+        Failure ->
+            Debug.todo "branch 'Failure' not implemented"
 
 
 parseInput : String -> Int
@@ -96,10 +154,43 @@ parseInput text =
             0
 
 
+subscriptions : Model -> Sub Messages
+subscriptions model =
+    Sub.none
+
+
+type alias User =
+    { id : Int
+    , email : String
+    , password : String
+    , name : String
+    }
+
+
+getUsers : Cmd Messages
+getUsers =
+    Http.get
+        { url = "http://localhost:3000/users"
+        , expect = Http.expectJson GotUsers usersDecoder
+        }
+
+
+usersDecoder : Decoder (List User)
+usersDecoder =
+    list
+        (map4 User
+            (field "id" int)
+            (field "email" string)
+            (field "password" string)
+            (field "name" string)
+        )
+
+
 main : Program () Model Messages
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
-        , view = view
         , update = update
+        , subscriptions = subscriptions
+        , view = view
         }
