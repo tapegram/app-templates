@@ -6,13 +6,13 @@ Axum example apps: https://github.com/tokio-rs/axum/tree/main/examples
 
 ## Dev Flow
 
-Run with `cargo run --bin hello-world`
+Run with `cargo run`
 
 and then visit `http://localhost:3000`
 
 ## Todo
 
 - [x] Hello World
-- [] Request/Response types
+- [x] Request/Response types
 - [] Writing tests
 - [] Connecting to a DB
