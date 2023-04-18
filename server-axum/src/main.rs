@@ -121,9 +121,9 @@ async fn main() {
             ServiceBuilder::new()
                 .layer(AddExtensionLayer::new(SharedState::default()))
                 .layer(
-                    CorsLayer::new()
-                        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
-                        .allow_origin(Any),
+                    CorsLayer::permissive(), // CorsLayer::new()
+                                             // .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+                                             // .allow_origin(Any),
                 )
                 .into_inner(),
         );

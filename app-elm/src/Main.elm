@@ -301,7 +301,7 @@ createUser name email password =
                 Json.Encode.object
                     [ ( "name", Json.Encode.string name )
                     , ( "email", Json.Encode.string email )
-                    , ( "passwordj", Json.Encode.string password )
+                    , ( "password", Json.Encode.string password )
                     ]
         , expect = Http.expectJson UserCreated userDecoder
         }
