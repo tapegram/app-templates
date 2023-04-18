@@ -8,6 +8,30 @@ import Json.Decode exposing (Decoder, field, int, list, map4, string)
 import String exposing (fromInt, toInt)
 
 
+
+-- MAIN
+
+
+main : Program () Model Messages
+main =
+    Browser.element
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
+
+
+
+-- MODEL
+
+
+type Model
+    = Loading
+    | Failure
+    | Loaded State
+
+
 init : () -> ( Model, Cmd Messages )
 init _ =
     ( Loading
@@ -24,6 +48,14 @@ type alias State =
     }
 
 
+type alias User =
+    { id : Int
+    , email : String
+    , password : String
+    , name : String
+    }
+
+
 initState : State
 initState =
     { score = 0
@@ -34,10 +66,8 @@ initState =
     }
 
 
-type Model
-    = Loading
-    | Failure
-    | Loaded State
+
+-- VIEW
 
 
 view : Model -> Html.Html Messages
@@ -84,6 +114,10 @@ toTableRow user =
         , td [] [ text user.email ]
         , td [] [ text user.password ]
         ]
+
+
+
+-- UPDATE
 
 
 type alias Text =
@@ -159,17 +193,17 @@ parseInput text =
             0
 
 
+
+-- SUBSCRIPTIONS
+
+
 subscriptions : Model -> Sub Messages
 subscriptions _ =
     Sub.none
 
 
-type alias User =
-    { id : Int
-    , email : String
-    , password : String
-    , name : String
-    }
+
+-- HTTP
 
 
 getUsers : Cmd Messages
@@ -189,13 +223,3 @@ usersDecoder =
             (field "password" string)
             (field "name" string)
         )
-
-
-main : Program () Model Messages
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        , view = view
-        }
