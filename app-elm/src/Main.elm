@@ -2,9 +2,11 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (button, div, input, table, td, text, th, thead, tr)
+import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map4, string)
+import Json.Encode
 import String exposing (fromInt, toInt)
 
 
@@ -12,7 +14,7 @@ import String exposing (fromInt, toInt)
 -- MAIN
 
 
-main : Program () Model Messages
+main : Program () Model Message
 main =
     Browser.element
         { init = init
@@ -32,7 +34,7 @@ type Model
     | Loaded State
 
 
-init : () -> ( Model, Cmd Messages )
+init : () -> ( Model, Cmd Message )
 init _ =
     ( Loading
     , getUsers
@@ -45,6 +47,16 @@ type alias State =
     , lastName : String
     , inputValue : Int
     , users : List User
+    , newUserFormName : String
+    , newUserFormEmail : String
+    , newUserFormPassword : String
+    }
+
+
+type alias NewUserFormState =
+    { name : String
+    , email : String
+    , password : String
     }
 
 
@@ -63,6 +75,9 @@ initState =
     , lastName = "Munonye"
     , inputValue = 0
     , users = []
+    , newUserFormName = ""
+    , newUserFormEmail = ""
+    , newUserFormPassword = ""
     }
 
 
@@ -70,7 +85,7 @@ initState =
 -- VIEW
 
 
-view : Model -> Html.Html Messages
+view : Model -> Html.Html Message
 view model =
     case model of
         Loaded state ->
@@ -78,9 +93,16 @@ view model =
                 [ text (fromInt state.score)
                 , div [] []
                 , input [ onInput TextChanged ] []
-                , button [ onClick Add ] [ text "Add" ]
+                , button [ onClick Added ] [ text "Add" ]
                 , div []
                     [ viewUsers state.users ]
+                , div [] []
+                , div []
+                    [ input [ onInput NewUserFormNameChanged, placeholder "name" ] []
+                    , input [ onInput NewUserFormEmailChanged, placeholder "email" ] []
+                    , input [ onInput NewUserFormPasswordChanged, placeholder "password" ] []
+                    , button [ onClick NewUserFormSubmitted ] [ text "Go!" ]
+                    ]
                 ]
 
         Loading ->
@@ -90,7 +112,7 @@ view model =
             div [] [ text "Failed to load users" ]
 
 
-viewUsers : List User -> Html.Html Messages
+viewUsers : List User -> Html.Html Message
 viewUsers users =
     table []
         (List.concat
@@ -106,7 +128,7 @@ viewUsers users =
         )
 
 
-toTableRow : User -> Html.Html Messages
+toTableRow : User -> Html.Html Message
 toTableRow user =
     tr []
         [ td [] [ text (fromInt user.id) ]
@@ -128,19 +150,28 @@ type alias Key =
     Int
 
 
-type Messages
-    = Add
+type
+    Message
+    -- Tutorial stuff to remove later
+    = Added
     | TextChanged Text
     | KeyPressed Key
+      -- Http results
     | GotUsers (Result Http.Error (List User))
+    | UserCreated (Result Http.Error User)
+      -- New User form
+    | NewUserFormNameChanged String
+    | NewUserFormPasswordChanged String
+    | NewUserFormEmailChanged String
+    | NewUserFormSubmitted
 
 
-update : Messages -> Model -> ( Model, Cmd Messages )
+update : Message -> Model -> ( Model, Cmd Message )
 update msg model =
     case model of
         Loaded state ->
             case msg of
-                Add ->
+                Added ->
                     ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
 
                 TextChanged newText ->
@@ -151,6 +182,12 @@ update msg model =
                 GotUsers _ ->
                     ( model, Cmd.none )
 
+                UserCreated (Ok user) ->
+                    ( Loaded { state | users = state.users ++ [ user ] }, Cmd.none )
+
+                UserCreated (Err _) ->
+                    Debug.todo "Failed to create user"
+
                 KeyPressed key ->
                     case key of
                         13 ->
@@ -159,18 +196,20 @@ update msg model =
                         _ ->
                             ( Loaded state, Cmd.none )
 
+                NewUserFormNameChanged name ->
+                    ( Loaded { state | newUserFormName = name }, Cmd.none )
+
+                NewUserFormPasswordChanged password ->
+                    ( Loaded { state | newUserFormPassword = password }, Cmd.none )
+
+                NewUserFormEmailChanged email ->
+                    ( Loaded { state | newUserFormEmail = email }, Cmd.none )
+
+                NewUserFormSubmitted ->
+                    ( model, createUser state.newUserFormName state.newUserFormEmail state.newUserFormPassword )
+
         Loading ->
             case msg of
-                -- ( model, Cmd.none )
-                Add ->
-                    Debug.todo "todo"
-
-                TextChanged _ ->
-                    Debug.todo "branch 'TextChanged _' not implemented"
-
-                KeyPressed _ ->
-                    Debug.todo "branch 'KeyPressed _' not implemented"
-
                 GotUsers result ->
                     case result of
                         Ok users ->
@@ -178,6 +217,9 @@ update msg model =
 
                         Err _ ->
                             ( Failure, Cmd.none )
+
+                _ ->
+                    ( Loading, Cmd.none )
 
         Failure ->
             Debug.todo "branch 'Failure' not implemented"
@@ -197,7 +239,7 @@ parseInput text =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Messages
+subscriptions : Model -> Sub Message
 subscriptions _ =
     Sub.none
 
@@ -206,20 +248,74 @@ subscriptions _ =
 -- HTTP
 
 
-getUsers : Cmd Messages
+type alias Url =
+    String
+
+
+type alias UserId =
+    String
+
+
+type Endpoint
+    = Endpoint Url
+
+
+unwrap : Endpoint -> String
+unwrap (Endpoint url) =
+    url
+
+
+getUsersUrl : Endpoint
+getUsersUrl =
+    Endpoint "http://localhost:3000/users"
+
+
+createUserUrl : Endpoint
+createUserUrl =
+    Endpoint "http://localhost:3000/users"
+
+
+updateUserUrl : UserId -> Endpoint
+updateUserUrl userId =
+    Endpoint (String.join "/" [ "http://localhost:3000/users", userId ])
+
+
+getUsers : Cmd Message
 getUsers =
     Http.get
-        { url = "http://localhost:3000/users"
+        { url = unwrap getUsersUrl
         , expect = Http.expectJson GotUsers usersDecoder
         }
 
 
+
+-- TODO: implement this correctly
+
+
+createUser : String -> String -> String -> Cmd Message
+createUser name email password =
+    Http.post
+        { url = unwrap createUserUrl
+        , body =
+            Http.jsonBody <|
+                Json.Encode.object
+                    [ ( "name", Json.Encode.string name )
+                    , ( "email", Json.Encode.string email )
+                    , ( "passwordj", Json.Encode.string password )
+                    ]
+        , expect = Http.expectJson UserCreated userDecoder
+        }
+
+
+userDecoder : Decoder User
+userDecoder =
+    map4 User
+        (field "id" int)
+        (field "email" string)
+        (field "password" string)
+        (field "name" string)
+
+
 usersDecoder : Decoder (List User)
 usersDecoder =
-    list
-        (map4 User
-            (field "id" int)
-            (field "email" string)
-            (field "password" string)
-            (field "name" string)
-        )
+    list userDecoder
