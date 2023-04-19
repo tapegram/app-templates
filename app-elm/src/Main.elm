@@ -1,4 +1,5 @@
 module Main exposing (main)
+import CreateUser
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
@@ -9,6 +10,7 @@ import Html.Lazy exposing (lazy)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s, string)
 import Users
+import CreateUser
 
 
 
@@ -31,7 +33,7 @@ type alias UserId =
 
 type Page
     = UsersPage Users.Model
-    | CreateUserPage
+    | CreateUserPage CreateUser.Model
     | UserDetailPage
     | NotFoundPage
 
@@ -54,8 +56,8 @@ view model =
                 UsersPage m ->
                     Users.view m |> Html.map GotUsersMsg
 
-                CreateUserPage ->
-                    Debug.todo "branch 'CreateUserPage' not implemented"
+                CreateUserPage m ->
+                    CreateUser.view m |> Html.map CreateUserMsg
 
                 UserDetailPage ->
                     Debug.todo "branch 'UserDetailPage' not implemented"
@@ -118,7 +120,7 @@ isActive { link, page } =
         ( Users, _ ) ->
             False
 
-        ( CreateUser, CreateUserPage ) ->
+        ( CreateUser, CreateUserPage _ ) ->
             True
 
         ( CreateUser, _ ) ->
@@ -139,6 +141,7 @@ type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
     | GotUsersMsg Users.Msg
+    | CreateUserMsg CreateUser.Msg
 
 
 
@@ -149,6 +152,9 @@ toUsers : Model -> ( Users.Model, Cmd Users.Msg ) -> ( Model, Cmd Msg )
 toUsers model ( userModel, userCmd ) =
     ( { model | page = UsersPage userModel }, Cmd.map GotUsersMsg userCmd )
 
+toCreateUser : Model -> ( CreateUser.Model, Cmd CreateUser.Msg ) -> ( Model, Cmd Msg )
+toCreateUser model ( createUserModel, createUserCmd ) =
+    ( { model | page = CreateUserPage createUserModel }, Cmd.map CreateUserMsg createUserCmd )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -177,6 +183,16 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        CreateUserMsg createUserMsg ->
+            case model.page of
+                CreateUserPage createUserModel ->
+                    case createUserMsg of
+                        (CreateUserMsg UserCreated (Ok user)) ->
+                            ( { model | page = UsersPage }, Cmd.none )
+                        _ -> toCreateUser
+                                model
+                                (CreateUser.update createUserMsg createUserModel)
+                _ -> ( model, Cmd.none )
 
 
 -- SUBSCRIPTIONS
@@ -214,6 +230,9 @@ updateUrl url model =
     case Parser.parse parser url of
         Just Users ->
             Users.init () |> toUsers model
+
+        Just CreateUser ->
+            CreateUser.init() |> toCreateUser model
 
         _ ->
             ( { model | page = NotFoundPage }, Cmd.none )
