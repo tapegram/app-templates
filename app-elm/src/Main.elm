@@ -1,321 +1,231 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Browser
-import Html exposing (button, div, input, table, td, text, th, thead, tr)
-import Html.Attributes exposing (placeholder)
-import Html.Events exposing (onClick, onInput)
-import Http
-import Json.Decode exposing (Decoder, field, int, list, map4, string)
-import Json.Encode
-import String exposing (fromInt, toInt)
-
-
-
--- MAIN
-
-
-main : Program () Model Message
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        , view = view
-        }
+import Browser exposing (Document)
+import Browser.Navigation as Nav
+import Html exposing (Html, a, footer, h1, li, nav, text, ul)
+import Html.Attributes exposing (classList, href)
+import Html.Events exposing (onMouseOver)
+import Html.Lazy exposing (lazy)
+import Url exposing (Url)
+import Url.Parser as Parser exposing ((</>), Parser, s, string)
+import Users
 
 
 
 -- MODEL
 
 
-type Model
-    = Loading
-    | Failure
-    | Loaded State
+type alias Model =
+    { -- Storing the current page value in the Model so that view can render things different depending on the current page state
+      page : Page
 
-
-init : () -> ( Model, Cmd Message )
-init _ =
-    ( Loading
-    , getUsers
-    )
-
-
-type alias State =
-    { score : Int
-    , firstName : String
-    , lastName : String
-    , inputValue : Int
-    , users : List User
-    , newUserFormName : String
-    , newUserFormEmail : String
-    , newUserFormPassword : String
+    -- this basically exists exclusively to be used with Nav.pushUrl
+    -- this is an implementation detail to make it impossible to use Nav.pushUrl without Browser.application, since thats the only way to get a key.
+    , key : Nav.Key
     }
-
-
-type alias NewUserFormState =
-    { name : String
-    , email : String
-    , password : String
-    }
-
-
-type alias User =
-    { id : Int
-    , email : String
-    , password : String
-    , name : String
-    }
-
-
-initState : State
-initState =
-    { score = 0
-    , firstName = "Kindson"
-    , lastName = "Munonye"
-    , inputValue = 0
-    , users = []
-    , newUserFormName = ""
-    , newUserFormEmail = ""
-    , newUserFormPassword = ""
-    }
-
-
-
--- VIEW
-
-
-view : Model -> Html.Html Message
-view model =
-    case model of
-        Loaded state ->
-            div []
-                [ text (fromInt state.score)
-                , div [] []
-                , input [ onInput TextChanged ] []
-                , button [ onClick Added ] [ text "Add" ]
-                , div []
-                    [ viewUsers state.users ]
-                , div [] []
-                , div []
-                    [ input [ onInput NewUserFormNameChanged, placeholder "name" ] []
-                    , input [ onInput NewUserFormEmailChanged, placeholder "email" ] []
-                    , input [ onInput NewUserFormPasswordChanged, placeholder "password" ] []
-                    , button [ onClick NewUserFormSubmitted ] [ text "Go!" ]
-                    ]
-                ]
-
-        Loading ->
-            div [] [ text "Loading..." ]
-
-        Failure ->
-            div [] [ text "Failed to load users" ]
-
-
-viewUsers : List User -> Html.Html Message
-viewUsers users =
-    table []
-        (List.concat
-            [ [ thead []
-                    [ th [] [ text "Id" ]
-                    , th [] [ text "Name" ]
-                    , th [] [ text "Email" ]
-                    , th [] [ text "Password" ]
-                    ]
-              ]
-            , List.map toTableRow users
-            ]
-        )
-
-
-toTableRow : User -> Html.Html Message
-toTableRow user =
-    tr []
-        [ td [] [ text (fromInt user.id) ]
-        , td [] [ text user.name ]
-        , td [] [ text user.email ]
-        , td [] [ text user.password ]
-        ]
-
-
-
--- UPDATE
-
-
-type alias Text =
-    String
-
-
-type alias Key =
-    Int
-
-
-type
-    Message
-    -- Tutorial stuff to remove later
-    = Added
-    | TextChanged Text
-    | KeyPressed Key
-      -- Http results
-    | GotUsers (Result Http.Error (List User))
-    | UserCreated (Result Http.Error User)
-      -- New User form
-    | NewUserFormNameChanged String
-    | NewUserFormPasswordChanged String
-    | NewUserFormEmailChanged String
-    | NewUserFormSubmitted
-
-
-update : Message -> Model -> ( Model, Cmd Message )
-update msg model =
-    case model of
-        Loaded state ->
-            case msg of
-                Added ->
-                    ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
-
-                TextChanged newText ->
-                    ( Loaded { state | inputValue = parseInput newText }
-                    , Cmd.none
-                    )
-
-                GotUsers _ ->
-                    ( model, Cmd.none )
-
-                UserCreated (Ok user) ->
-                    ( Loaded { state | users = state.users ++ [ user ] }, Cmd.none )
-
-                UserCreated (Err _) ->
-                    Debug.todo "Failed to create user"
-
-                KeyPressed key ->
-                    case key of
-                        13 ->
-                            ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
-
-                        _ ->
-                            ( Loaded state, Cmd.none )
-
-                NewUserFormNameChanged name ->
-                    ( Loaded { state | newUserFormName = name }, Cmd.none )
-
-                NewUserFormPasswordChanged password ->
-                    ( Loaded { state | newUserFormPassword = password }, Cmd.none )
-
-                NewUserFormEmailChanged email ->
-                    ( Loaded { state | newUserFormEmail = email }, Cmd.none )
-
-                NewUserFormSubmitted ->
-                    ( model, createUser state.newUserFormName state.newUserFormEmail state.newUserFormPassword )
-
-        Loading ->
-            case msg of
-                GotUsers result ->
-                    case result of
-                        Ok users ->
-                            ( Loaded { initState | users = users }, Cmd.none )
-
-                        Err _ ->
-                            ( Failure, Cmd.none )
-
-                _ ->
-                    ( Loading, Cmd.none )
-
-        Failure ->
-            Debug.todo "branch 'Failure' not implemented"
-
-
-parseInput : String -> Int
-parseInput text =
-    case toInt text of
-        Just val ->
-            val
-
-        Nothing ->
-            0
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Message
-subscriptions _ =
-    Sub.none
-
-
-
--- HTTP
-
-
-type alias Url =
-    String
 
 
 type alias UserId =
     String
 
 
-type Endpoint
-    = Endpoint Url
+type Page
+    = UsersPage Users.Model
+    | CreateUserPage
+    | UserDetailPage
+    | NotFoundPage
 
 
-unwrap : Endpoint -> String
-unwrap (Endpoint url) =
-    url
-
-
-getUsersUrl : Endpoint
-getUsersUrl =
-    Endpoint "http://localhost:3000/users"
-
-
-createUserUrl : Endpoint
-createUserUrl =
-    Endpoint "http://localhost:3000/users"
-
-
-updateUserUrl : UserId -> Endpoint
-updateUserUrl userId =
-    Endpoint (String.join "/" [ "http://localhost:3000/users", userId ])
-
-
-getUsers : Cmd Message
-getUsers =
-    Http.get
-        { url = unwrap getUsersUrl
-        , expect = Http.expectJson GotUsers usersDecoder
-        }
+type Route
+    = Users
+    | CreateUser
+    | UserDetails UserId
 
 
 
--- TODO: implement this correctly
+-- VIEW
 
 
-createUser : String -> String -> String -> Cmd Message
-createUser name email password =
-    Http.post
-        { url = unwrap createUserUrl
-        , body =
-            Http.jsonBody <|
-                Json.Encode.object
-                    [ ( "name", Json.Encode.string name )
-                    , ( "email", Json.Encode.string email )
-                    , ( "password", Json.Encode.string password )
+view : Model -> Document Msg
+view model =
+    let
+        content =
+            case model.page of
+                UsersPage m ->
+                    Users.view m |> Html.map GotUsersMsg
+
+                CreateUserPage ->
+                    Debug.todo "branch 'CreateUserPage' not implemented"
+
+                UserDetailPage ->
+                    Debug.todo "branch 'UserDetailPage' not implemented"
+
+                NotFoundPage ->
+                    Debug.todo "branch 'NotFoundPage' not implemented"
+    in
+    { -- The title of page in the browser
+      title = "Template App, SPA Style"
+
+    -- Notice that body is a list
+    , body =
+        [ lazy viewHeader model.page
+        , content
+        , viewFooter
+        ]
+    }
+
+
+viewFooter : Html msg
+viewFooter =
+    footer [] [ text "One is never alone with a rubber duck. - Douglas Adams" ]
+
+
+viewHeader : Page -> Html Msg
+viewHeader page =
+    let
+        logo =
+            h1 [] [ text "Template Users App" ]
+
+        links =
+            ul []
+                [ navLink Users { url = "/users", caption = "Users" }
+                , navLink CreateUser { url = "/users/create", caption = "Create User" }
+                ]
+
+        navLink : Route -> { url : String, caption : String } -> Html msg
+        navLink route { url, caption } =
+            li
+                [ classList
+                    [ ( "active"
+                      , isActive
+                            { link = route
+                            , page = page
+                            }
+                      )
                     ]
-        , expect = Http.expectJson UserCreated userDecoder
+                ]
+                [ a [ href url ] [ text caption ] ]
+    in
+    nav [] [ logo, links ]
+
+
+isActive : { link : Route, page : Page } -> Bool
+isActive { link, page } =
+    case ( link, page ) of
+        ( Users, UsersPage _) ->
+            True
+
+        ( Users, _ ) ->
+            False
+
+        ( CreateUser, CreateUserPage ) ->
+            True
+
+        ( CreateUser, _ ) ->
+            False
+
+        ( UserDetails _, UserDetailPage ) -> True
+        ( UserDetails _, _ ) -> False
+
+
+
+-- MESSAGE
+
+
+type Msg
+    = ClickedLink Browser.UrlRequest
+    | ChangedUrl Url
+    | GotUsersMsg Users.Msg
+
+
+
+-- UPDATE
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        ClickedLink urlRequest ->
+            case urlRequest of
+                -- Handle clicking a link to some other domain (website.com -> othersite.com)
+                -- Nav.load does a full page load
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+                -- Handle clicking a link to the same domain (website.com/foo -> website.com/bar)
+                -- Nav.pushUrl just pushes onto the browser's history stack (without reloading)
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+        ChangedUrl url ->
+            -- This would be the place where we could also choose to implement fancy transitions/etc.
+            ( { model | page = urlToPage url }, Cmd.none )
+            
+        GotUsersMsg usersMsg -> Users.update usersMsg
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+--
+-- MAIN
+
+
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = init
+        , onUrlRequest = ClickedLink
+        , onUrlChange = ChangedUrl
+        , subscriptions = subscriptions
+        , update = update
+        , view = view
         }
 
 
-userDecoder : Decoder User
-userDecoder =
-    map4 User
-        (field "id" int)
-        (field "email" string)
-        (field "password" string)
-        (field "name" string)
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    ( { page = urlToPage url, key = key }, Cmd.none )
 
 
-usersDecoder : Decoder (List User)
-usersDecoder =
-    list userDecoder
+urlToPage : Url -> Page
+urlToPage url =
+    case Parser.parse parser url of
+        Just Users ->
+            UsersPage (Tuple.first (Users.init ()))
+
+        Just CreateUser ->
+            CreateUserPage
+
+        Just (UserDetails _) ->
+            UserDetailPage
+
+        Nothing ->
+            NotFoundPage
+
+
+parser : Parser (Route -> a) a
+parser =
+    Parser.oneOf
+        [ -- Match on / and returns Users page
+          Parser.map Users
+            Parser.top
+
+        -- Match on /users and returns Users page
+        , Parser.map
+            Users
+            (s "users")
+
+        -- Match on /users/create and return CreateUser
+        , Parser.map CreateUser (s "users" </> s "create")
+
+        -- Match on /users/<id> and return UserDetail
+        , Parser.map UserDetails (s "users" </> Parser.string)
+        ]

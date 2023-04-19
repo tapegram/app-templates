@@ -23,6 +23,15 @@ elm-live src/Main.elm
 
 See: https://www.elm-live.com/
 
+HOWEVER, just this won't work with single page apps (SPAs), which is what we will likely be doing.
+
+instead do this:
+```
+elm-live src/Main.elm --pushstate
+```
+
+The explanation is [here](https://github.com/dwyl/learn-elm/issues/156)
+
 
 ## Resources
 
