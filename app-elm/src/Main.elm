@@ -112,7 +112,7 @@ viewHeader page =
 isActive : { link : Route, page : Page } -> Bool
 isActive { link, page } =
     case ( link, page ) of
-        ( Users, UsersPage _) ->
+        ( Users, UsersPage _ ) ->
             True
 
         ( Users, _ ) ->
@@ -124,8 +124,11 @@ isActive { link, page } =
         ( CreateUser, _ ) ->
             False
 
-        ( UserDetails _, UserDetailPage ) -> True
-        ( UserDetails _, _ ) -> False
+        ( UserDetails _, UserDetailPage ) ->
+            True
+
+        ( UserDetails _, _ ) ->
+            False
 
 
 
@@ -140,6 +143,11 @@ type Msg
 
 
 -- UPDATE
+
+
+toUsers : Model -> ( Users.Model, Cmd Users.Msg ) -> ( Model, Cmd Msg )
+toUsers model ( userModel, userCmd ) =
+    ( { model | page = UsersPage userModel }, Cmd.map GotUsersMsg userCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -159,9 +167,15 @@ update msg model =
 
         ChangedUrl url ->
             -- This would be the place where we could also choose to implement fancy transitions/etc.
-            ( { model | page = urlToPage url }, Cmd.none )
-            
-        GotUsersMsg usersMsg -> Users.update usersMsg
+            updateUrl url model
+
+        GotUsersMsg usersMsg ->
+            case model.page of
+                UsersPage userModel ->
+                    toUsers model (Users.update usersMsg userModel)
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 
@@ -192,23 +206,34 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( { page = urlToPage url, key = key }, Cmd.none )
+    updateUrl url { page = NotFoundPage, key = key }
 
 
-urlToPage : Url -> Page
-urlToPage url =
+updateUrl : Url -> Model -> ( Model, Cmd Msg )
+updateUrl url model =
     case Parser.parse parser url of
         Just Users ->
-            UsersPage (Tuple.first (Users.init ()))
+            Users.init () |> toUsers model
 
-        Just CreateUser ->
-            CreateUserPage
+        _ ->
+            ( { model | page = NotFoundPage }, Cmd.none )
 
-        Just (UserDetails _) ->
-            UserDetailPage
 
-        Nothing ->
-            NotFoundPage
+
+-- urlToPage : Url -> Page
+-- urlToPage url =
+--     case Parser.parse parser url of
+--         Just Users ->
+--             UsersPage (Tuple.first (Users.init ()))
+--
+--         Just CreateUser ->
+--             CreateUserPage
+--
+--         Just (UserDetails _) ->
+--             UserDetailPage
+--
+--         Nothing ->
+--             NotFoundPage
 
 
 parser : Parser (Route -> a) a
