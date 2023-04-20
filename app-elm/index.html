@@ -6704,8 +6704,8 @@ var $author$project$CreateUser$update = F2(
 					return _Debug_todo(
 						'CreateUser',
 						{
-							start: {line: 77, column: 13},
-							end: {line: 77, column: 23}
+							start: {line: 76, column: 13},
+							end: {line: 76, column: 23}
 						})('Failed to create user');
 				}
 			case 'NewUserFormNameChanged':
@@ -6745,7 +6745,6 @@ var $author$project$Users$update = F2(
 	function (msg, model) {
 		switch (model.$) {
 			case 'Loaded':
-				var state = model.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'Loading':
 				var result = msg.a;
@@ -6764,8 +6763,8 @@ var $author$project$Users$update = F2(
 				return _Debug_todo(
 					'Users',
 					{
-						start: {line: 128, column: 13},
-						end: {line: 128, column: 23}
+						start: {line: 125, column: 13},
+						end: {line: 125, column: 23}
 					})('branch \'Failure\' not implemented');
 		}
 	});
@@ -6933,6 +6932,13 @@ var $author$project$CreateUser$view = function (_v0) {
 				A2($elm$html$Html$div, _List_Nil, _List_Nil)
 			]));
 };
+var $author$project$NotFound$view = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			$elm$html$Html$text('404 :(')
+		]));
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$th = _VirtualDom_node('th');
 var $elm$html$Html$thead = _VirtualDom_node('thead');
@@ -7209,12 +7215,7 @@ var $author$project$Main$view = function (model) {
 						end: {line: 61, column: 31}
 					})('branch \'UserDetailPage\' not implemented');
 			default:
-				return _Debug_todo(
-					'Main',
-					{
-						start: {line: 64, column: 21},
-						end: {line: 64, column: 31}
-					})('branch \'NotFoundPage\' not implemented');
+				return $author$project$NotFound$view;
 		}
 	}();
 	return {

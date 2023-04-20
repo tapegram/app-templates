@@ -1,12 +1,9 @@
 module Users exposing (Model, Msg, init, update, view)
 
-import Html exposing (button, div, input, table, td, text, th, thead, tr)
-import Html.Attributes exposing (placeholder)
-import Html.Events exposing (onClick, onInput)
+import Html exposing (div, table, td, text, th, thead, tr)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map4, string)
-import Json.Encode
-import String exposing (fromInt, toInt)
+import String exposing (fromInt)
 
 
 
@@ -109,7 +106,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case model of
-        Loaded state ->
+        Loaded _ ->
             case msg of
                 GotUsers _ ->
                     ( model, Cmd.none )

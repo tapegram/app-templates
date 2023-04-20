@@ -5,10 +5,10 @@ import Browser.Navigation as Nav
 import CreateUser
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
-import Html.Lazy exposing (lazy)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
 import Users
+import NotFound
 
 
 
@@ -61,7 +61,7 @@ view model =
                     Debug.todo "branch 'UserDetailPage' not implemented"
 
                 NotFoundPage ->
-                    Debug.todo "branch 'NotFoundPage' not implemented"
+                    NotFound.view
     in
     { -- The title of page in the browser
       title = "Template App, SPA Style"

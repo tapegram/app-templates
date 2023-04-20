@@ -3,7 +3,6 @@ module CreateUser exposing (Model, Msg, init, update, view)
 import Html exposing (button, div, input, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy exposing (lazy)
 import Http
 import Json.Decode exposing (Decoder, field, int, map4, string)
 import Json.Encode
