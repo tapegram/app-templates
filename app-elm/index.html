@@ -6170,11 +6170,11 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Page$Users$Endpoint = function (a) {
+var $author$project$Endpoint$Endpoint = function (a) {
 	return {$: 'Endpoint', a: a};
 };
-var $author$project$Page$Users$getUsersUrl = $author$project$Page$Users$Endpoint('http://localhost:3000/users');
-var $author$project$Page$Users$unwrap = function (_v0) {
+var $author$project$Endpoint$getUsersUrl = $author$project$Endpoint$Endpoint('http://localhost:3000/users');
+var $author$project$Endpoint$unwrap = function (_v0) {
 	var url = _v0.a;
 	return url;
 };
@@ -6198,7 +6198,7 @@ var $author$project$Page$Users$usersDecoder = $elm$json$Json$Decode$list($author
 var $author$project$Page$Users$getUsers = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Page$Users$GotUsers, $author$project$Page$Users$usersDecoder),
-		url: $author$project$Page$Users$unwrap($author$project$Page$Users$getUsersUrl)
+		url: $author$project$Endpoint$unwrap($author$project$Endpoint$getUsersUrl)
 	});
 var $author$project$Page$Users$init = function (_v0) {
 	return _Utils_Tuple2($author$project$Page$Users$Loading, $author$project$Page$Users$getUsers);
@@ -6623,10 +6623,7 @@ var $elm$url$Url$toString = function (url) {
 var $author$project$Page$CreateUser$UserCreated = function (a) {
 	return {$: 'UserCreated', a: a};
 };
-var $author$project$Page$CreateUser$Endpoint = function (a) {
-	return {$: 'Endpoint', a: a};
-};
-var $author$project$Page$CreateUser$createUserUrl = $author$project$Page$CreateUser$Endpoint('http://localhost:3000/users');
+var $author$project$Endpoint$createUserUrl = $author$project$Endpoint$Endpoint('http://localhost:3000/users');
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
 		_Http_pair,
@@ -6651,10 +6648,6 @@ var $elm$http$Http$post = function (r) {
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Page$CreateUser$unwrap = function (_v0) {
-	var url = _v0.a;
-	return url;
-};
 var $author$project$Page$CreateUser$User = F4(
 	function (id, email, password, name) {
 		return {email: email, id: id, name: name, password: password};
@@ -6687,7 +6680,7 @@ var $author$project$Page$CreateUser$createUser = function (_v0) {
 							$elm$json$Json$Encode$string(password))
 						]))),
 			expect: A2($elm$http$Http$expectJson, $author$project$Page$CreateUser$UserCreated, $author$project$Page$CreateUser$userDecoder),
-			url: $author$project$Page$CreateUser$unwrap($author$project$Page$CreateUser$createUserUrl)
+			url: $author$project$Endpoint$unwrap($author$project$Endpoint$createUserUrl)
 		});
 };
 var $elm$core$Debug$todo = _Debug_todo;
@@ -6704,8 +6697,8 @@ var $author$project$Page$CreateUser$update = F2(
 					return _Debug_todo(
 						'Page.CreateUser',
 						{
-							start: {line: 76, column: 13},
-							end: {line: 76, column: 23}
+							start: {line: 78, column: 13},
+							end: {line: 78, column: 23}
 						})('Failed to create user');
 				}
 			case 'NewUserFormNameChanged':
@@ -6763,8 +6756,8 @@ var $author$project$Page$Users$update = F2(
 				return _Debug_todo(
 					'Page.Users',
 					{
-						start: {line: 125, column: 13},
-						end: {line: 125, column: 23}
+						start: {line: 126, column: 13},
+						end: {line: 126, column: 23}
 					})('branch \'Failure\' not implemented');
 		}
 	});
@@ -7122,7 +7115,6 @@ var $author$project$Main$isActive = function (_v0) {
 			}
 		default:
 			if (_v1.b.$ === 'UserDetailPage') {
-				var _v6 = _v1.b;
 				return true;
 			} else {
 				return false;
@@ -7211,8 +7203,8 @@ var $author$project$Main$view = function (model) {
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 61, column: 21},
-						end: {line: 61, column: 31}
+						start: {line: 62, column: 21},
+						end: {line: 62, column: 31}
 					})('branch \'UserDetailPage\' not implemented');
 			default:
 				return $author$project$Page$NotFound$view;

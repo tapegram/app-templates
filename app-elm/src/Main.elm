@@ -7,6 +7,7 @@ import Html.Attributes exposing (classList, href)
 import Page.CreateUser as CreateUser
 import Page.NotFound as NotFound
 import Page.Users as Users
+import Page.UserDetail as UserDetail
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
 
@@ -32,7 +33,7 @@ type alias UserId =
 type Page
     = UsersPage Users.Model
     | CreateUserPage CreateUser.Model
-    | UserDetailPage
+    | UserDetailPage UserDetail.Model
     | NotFoundPage
 
 
@@ -57,7 +58,7 @@ view model =
                 CreateUserPage m ->
                     CreateUser.view m |> Html.map CreateUserMsg
 
-                UserDetailPage ->
+                UserDetailPage _ ->
                     Debug.todo "branch 'UserDetailPage' not implemented"
 
                 NotFoundPage ->
@@ -124,7 +125,7 @@ isActive { link, page } =
         ( CreateUser, _ ) ->
             False
 
-        ( UserDetails _, UserDetailPage ) ->
+        ( UserDetails _, UserDetailPage _) ->
             True
 
         ( UserDetails _, _ ) ->

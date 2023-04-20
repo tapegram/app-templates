@@ -6,6 +6,8 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, int, map4, string)
 import Json.Encode
+import Endpoint exposing (unwrap)
+import Endpoint exposing (createUserUrl)
 
 
 
@@ -94,28 +96,7 @@ update msg model =
             )
 
 
-
--- SUBSCRIPTIONS
 -- HTTP
-
-
-type alias Url =
-    String
-
-
-type Endpoint
-    = Endpoint Url
-
-
-unwrap : Endpoint -> String
-unwrap (Endpoint url) =
-    url
-
-
-createUserUrl : Endpoint
-createUserUrl =
-    Endpoint "http://localhost:3000/users"
-
 
 createUser : { name : String, email : String, password : String } -> Cmd Msg
 createUser { name, email, password } =

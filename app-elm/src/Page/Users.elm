@@ -1,5 +1,6 @@
 module Page.Users exposing (Model, Msg, init, update, view)
 
+import Endpoint exposing (getUsersUrl, unwrap)
 import Html exposing (div, table, td, text, th, thead, tr)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map4, string)
@@ -129,23 +130,6 @@ update msg model =
 -- HTTP
 
 
-type alias Url =
-    String
-
-
-type Endpoint
-    = Endpoint Url
-
-
-unwrap : Endpoint -> String
-unwrap (Endpoint url) =
-    url
-
-
-getUsersUrl : Endpoint
-getUsersUrl =
-    Endpoint "http://localhost:3000/users"
-
 getUsers : Cmd Msg
 getUsers =
     Http.get
@@ -153,9 +137,8 @@ getUsers =
         , expect = Http.expectJson GotUsers usersDecoder
         }
 
-
-
 -- TODO: implement this correctly
+
 
 userDecoder : Decoder User
 userDecoder =
