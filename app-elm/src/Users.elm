@@ -1,6 +1,5 @@
 module Users exposing (Model, Msg, init, update, view)
 
-import Browser
 import Html exposing (button, div, input, table, td, text, th, thead, tr)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
@@ -8,20 +7,6 @@ import Http
 import Json.Decode exposing (Decoder, field, int, list, map4, string)
 import Json.Encode
 import String exposing (fromInt, toInt)
-
-
-
--- MAIN
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        , view = view
-        }
 
 
 
@@ -50,13 +35,6 @@ type alias State =
     , newUserFormName : String
     , newUserFormEmail : String
     , newUserFormPassword : String
-    }
-
-
-type alias NewUserFormState =
-    { name : String
-    , email : String
-    , password : String
     }
 
 
@@ -236,23 +214,10 @@ parseInput text =
 
 
 
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
-
-
-
 -- HTTP
 
 
 type alias Url =
-    String
-
-
-type alias UserId =
     String
 
 
@@ -273,11 +238,6 @@ getUsersUrl =
 createUserUrl : Endpoint
 createUserUrl =
     Endpoint "http://localhost:3000/users"
-
-
-updateUserUrl : UserId -> Endpoint
-updateUserUrl userId =
-    Endpoint (String.join "/" [ "http://localhost:3000/users", userId ])
 
 
 getUsers : Cmd Msg

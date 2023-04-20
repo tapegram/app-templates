@@ -1,44 +1,35 @@
 module CreateUser exposing (Model, Msg, init, update, view)
 
-import Browser
-import Html exposing (button, div, input, table, td, text, th, thead, tr)
+import Html exposing (button, div, input, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, field, int, list, map4, string)
+import Json.Decode exposing (Decoder, field, int, map4, string)
 import Json.Encode
-import String exposing (fromInt, toInt)
-
-
-
--- MAIN
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        , view = view
-        }
 
 
 
 -- MODEL
 
 
+type alias OnSuccess =
+    User -> Cmd Msg
+
+
 type alias Model =
     { name : String
     , email : String
     , password : String
+    , onSuccess : OnSuccess
     }
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { name = "", email = "", password = "" }
+
+init : OnSuccess -> ( Model, Cmd Msg )
+init onSuccess =
+    ( { name = "", email = "", password = "", onSuccess = onSuccess }
     , Cmd.none
     )
+
 
 type alias User =
     { id : Int
@@ -46,6 +37,7 @@ type alias User =
     , password : String
     , name : String
     }
+
 
 
 -- VIEW
@@ -61,11 +53,11 @@ view _ =
         ]
 
 
+
 -- UPDATE
 
 
-type
-    Msg
+type Msg
     = UserCreated (Result Http.Error User)
     | NewUserFormNameChanged String
     | NewUserFormPasswordChanged String
@@ -77,7 +69,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserCreated (Ok user) ->
-            ( model , Cmd.none )
+            ( model, model.onSuccess user )
 
         UserCreated (Err _) ->
             Debug.todo "Failed to create user"
@@ -93,18 +85,20 @@ update msg model =
 
         NewUserFormSubmitted ->
             ( model
-            , createUser { name = model.name
-                         , email = model.email
-                         , password =  model.password
-                         }
+            , createUser
+                { name = model.name
+                , email = model.email
+                , password = model.password
+                }
             )
+
 
 
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions _ = Sub.none
+
+
 
 
 -- HTTP

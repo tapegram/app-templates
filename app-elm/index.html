@@ -5374,9 +5374,9 @@ var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$NotFoundPage = {$: 'NotFoundPage'};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$CreateUser$init = function (_v0) {
+var $author$project$CreateUser$init = function (onSuccess) {
 	return _Utils_Tuple2(
-		{email: '', name: '', password: ''},
+		{email: '', name: '', onSuccess: onSuccess, password: ''},
 		$elm$core$Platform$Cmd$none);
 };
 var $author$project$Users$Loading = {$: 'Loading'};
@@ -6490,6 +6490,7 @@ var $author$project$Main$parser = $elm$url$Url$Parser$oneOf(
 				$elm$url$Url$Parser$s('users'),
 				$elm$url$Url$Parser$string))
 		]));
+var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $author$project$Main$CreateUserMsg = function (a) {
 	return {$: 'CreateUserMsg', a: a};
 };
@@ -6542,10 +6543,13 @@ var $author$project$Main$updateUrl = F2(
 							$author$project$Users$init(_Utils_Tuple0));
 					case 'CreateUser':
 						var _v2 = _v0.a;
+						var onSuccess = function (_v3) {
+							return A2($elm$browser$Browser$Navigation$pushUrl, model.key, '/users');
+						};
 						return A2(
 							$author$project$Main$toCreateUser,
 							model,
-							$author$project$CreateUser$init(_Utils_Tuple0));
+							$author$project$CreateUser$init(onSuccess));
 					default:
 						break _v0$2;
 				}
@@ -6560,7 +6564,7 @@ var $author$project$Main$updateUrl = F2(
 			$elm$core$Platform$Cmd$none);
 	});
 var $author$project$Main$init = F3(
-	function (flags, url, key) {
+	function (_v0, url, key) {
 		return A2(
 			$author$project$Main$updateUrl,
 			url,
@@ -6568,11 +6572,10 @@ var $author$project$Main$init = F3(
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$subscriptions = function (model) {
+var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
 		if (maybePort.$ === 'Nothing') {
@@ -6694,13 +6697,15 @@ var $author$project$CreateUser$update = F2(
 			case 'UserCreated':
 				if (msg.a.$ === 'Ok') {
 					var user = msg.a.a;
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(
+						model,
+						model.onSuccess(user));
 				} else {
 					return _Debug_todo(
 						'CreateUser',
 						{
-							start: {line: 83, column: 13},
-							end: {line: 83, column: 23}
+							start: {line: 75, column: 13},
+							end: {line: 75, column: 23}
 						})('Failed to create user');
 				}
 			case 'NewUserFormNameChanged':
@@ -6814,8 +6819,8 @@ var $author$project$Users$update = F2(
 							return _Debug_todo(
 								'Users',
 								{
-									start: {line: 189, column: 21},
-									end: {line: 189, column: 31}
+									start: {line: 167, column: 21},
+									end: {line: 167, column: 31}
 								})('Failed to create user');
 						}
 					case 'KeyPressed':
@@ -6882,8 +6887,8 @@ var $author$project$Users$update = F2(
 				return _Debug_todo(
 					'Users',
 					{
-						start: {line: 225, column: 13},
-						end: {line: 225, column: 23}
+						start: {line: 203, column: 13},
+						end: {line: 203, column: 23}
 					})('branch \'Failure\' not implemented');
 		}
 	});
@@ -7405,15 +7410,15 @@ var $author$project$Main$view = function (model) {
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 63, column: 21},
-						end: {line: 63, column: 31}
+						start: {line: 62, column: 21},
+						end: {line: 62, column: 31}
 					})('branch \'UserDetailPage\' not implemented');
 			default:
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 66, column: 21},
-						end: {line: 66, column: 31}
+						start: {line: 65, column: 21},
+						end: {line: 65, column: 31}
 					})('branch \'NotFoundPage\' not implemented');
 		}
 	}();

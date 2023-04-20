@@ -5,10 +5,9 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
-import Html.Events exposing (onMouseOver)
 import Html.Lazy exposing (lazy)
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, s, string)
+import Url.Parser as Parser exposing ((</>), Parser, s)
 import Users
 import CreateUser
 
@@ -186,12 +185,7 @@ update msg model =
         CreateUserMsg createUserMsg ->
             case model.page of
                 CreateUserPage createUserModel ->
-                    case createUserMsg of
-                        (CreateUserMsg UserCreated (Ok user)) ->
-                            ( { model | page = UsersPage }, Cmd.none )
-                        _ -> toCreateUser
-                                model
-                                (CreateUser.update createUserMsg createUserModel)
+                        toCreateUser model (CreateUser.update createUserMsg createUserModel)
                 _ -> ( model, Cmd.none )
 
 
@@ -199,7 +193,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -220,8 +214,9 @@ main =
         }
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key =
+type alias Flags = () -- Not used for now
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
     updateUrl url { page = NotFoundPage, key = key }
 
 
@@ -232,27 +227,15 @@ updateUrl url model =
             Users.init () |> toUsers model
 
         Just CreateUser ->
-            CreateUser.init() |> toCreateUser model
+            let
+                onSuccess _ = 
+                     Nav.pushUrl model.key "/users"
+            in
+            
+            CreateUser.init onSuccess |> toCreateUser model
 
         _ ->
             ( { model | page = NotFoundPage }, Cmd.none )
-
-
-
--- urlToPage : Url -> Page
--- urlToPage url =
---     case Parser.parse parser url of
---         Just Users ->
---             UsersPage (Tuple.first (Users.init ()))
---
---         Just CreateUser ->
---             CreateUserPage
---
---         Just (UserDetails _) ->
---             UserDetailPage
---
---         Nothing ->
---             NotFoundPage
 
 
 parser : Parser (Route -> a) a
