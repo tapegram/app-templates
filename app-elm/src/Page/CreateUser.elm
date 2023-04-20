@@ -1,13 +1,13 @@
 module Page.CreateUser exposing (Model, Msg, init, update, view)
 
+import API exposing (userDecoder)
+import Endpoint exposing (createUserUrl, unwrap)
 import Html exposing (button, div, input, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, field, int, map4, string)
 import Json.Encode
-import Endpoint exposing (unwrap)
-import Endpoint exposing (createUserUrl)
+import API exposing (User)
 
 
 
@@ -31,14 +31,6 @@ init onSuccess =
     ( { name = "", email = "", password = "", onSuccess = onSuccess }
     , Cmd.none
     )
-
-
-type alias User =
-    { id : Int
-    , email : String
-    , password : String
-    , name : String
-    }
 
 
 
@@ -96,7 +88,9 @@ update msg model =
             )
 
 
+
 -- HTTP
+
 
 createUser : { name : String, email : String, password : String } -> Cmd Msg
 createUser { name, email, password } =
@@ -111,12 +105,3 @@ createUser { name, email, password } =
                     ]
         , expect = Http.expectJson UserCreated userDecoder
         }
-
-
-userDecoder : Decoder User
-userDecoder =
-    map4 User
-        (field "id" int)
-        (field "email" string)
-        (field "password" string)
-        (field "name" string)

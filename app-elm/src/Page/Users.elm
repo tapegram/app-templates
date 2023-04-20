@@ -1,9 +1,9 @@
 module Page.Users exposing (Model, Msg, init, update, view)
 
 import Endpoint exposing (getUsersUrl, unwrap)
+import API exposing (User, usersDecoder)
 import Html exposing (div, table, td, text, th, thead, tr)
 import Http
-import Json.Decode exposing (Decoder, field, int, list, map4, string)
 import String exposing (fromInt)
 
 
@@ -30,14 +30,6 @@ type alias State =
     , lastName : String
     , inputValue : Int
     , users : List User
-    }
-
-
-type alias User =
-    { id : Int
-    , email : String
-    , password : String
-    , name : String
     }
 
 
@@ -136,19 +128,3 @@ getUsers =
         { url = unwrap getUsersUrl
         , expect = Http.expectJson GotUsers usersDecoder
         }
-
--- TODO: implement this correctly
-
-
-userDecoder : Decoder User
-userDecoder =
-    map4 User
-        (field "id" int)
-        (field "email" string)
-        (field "password" string)
-        (field "name" string)
-
-
-usersDecoder : Decoder (List User)
-usersDecoder =
-    list userDecoder

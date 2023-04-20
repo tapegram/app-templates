@@ -6179,7 +6179,7 @@ var $author$project$Endpoint$unwrap = function (_v0) {
 	return url;
 };
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Page$Users$User = F4(
+var $author$project$API$User = F4(
 	function (id, email, password, name) {
 		return {email: email, id: id, name: name, password: password};
 	});
@@ -6187,17 +6187,17 @@ var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Page$Users$userDecoder = A5(
+var $author$project$API$userDecoder = A5(
 	$elm$json$Json$Decode$map4,
-	$author$project$Page$Users$User,
+	$author$project$API$User,
 	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
 	A2($elm$json$Json$Decode$field, 'email', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'password', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string));
-var $author$project$Page$Users$usersDecoder = $elm$json$Json$Decode$list($author$project$Page$Users$userDecoder);
+var $author$project$API$usersDecoder = $elm$json$Json$Decode$list($author$project$API$userDecoder);
 var $author$project$Page$Users$getUsers = $elm$http$Http$get(
 	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Page$Users$GotUsers, $author$project$Page$Users$usersDecoder),
+		expect: A2($elm$http$Http$expectJson, $author$project$Page$Users$GotUsers, $author$project$API$usersDecoder),
 		url: $author$project$Endpoint$unwrap($author$project$Endpoint$getUsersUrl)
 	});
 var $author$project$Page$Users$init = function (_v0) {
@@ -6648,17 +6648,6 @@ var $elm$http$Http$post = function (r) {
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Page$CreateUser$User = F4(
-	function (id, email, password, name) {
-		return {email: email, id: id, name: name, password: password};
-	});
-var $author$project$Page$CreateUser$userDecoder = A5(
-	$elm$json$Json$Decode$map4,
-	$author$project$Page$CreateUser$User,
-	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
-	A2($elm$json$Json$Decode$field, 'email', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'password', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string));
 var $author$project$Page$CreateUser$createUser = function (_v0) {
 	var name = _v0.name;
 	var email = _v0.email;
@@ -6679,7 +6668,7 @@ var $author$project$Page$CreateUser$createUser = function (_v0) {
 							'password',
 							$elm$json$Json$Encode$string(password))
 						]))),
-			expect: A2($elm$http$Http$expectJson, $author$project$Page$CreateUser$UserCreated, $author$project$Page$CreateUser$userDecoder),
+			expect: A2($elm$http$Http$expectJson, $author$project$Page$CreateUser$UserCreated, $author$project$API$userDecoder),
 			url: $author$project$Endpoint$unwrap($author$project$Endpoint$createUserUrl)
 		});
 };
@@ -6697,8 +6686,8 @@ var $author$project$Page$CreateUser$update = F2(
 					return _Debug_todo(
 						'Page.CreateUser',
 						{
-							start: {line: 78, column: 13},
-							end: {line: 78, column: 23}
+							start: {line: 70, column: 13},
+							end: {line: 70, column: 23}
 						})('Failed to create user');
 				}
 			case 'NewUserFormNameChanged':
@@ -6756,8 +6745,8 @@ var $author$project$Page$Users$update = F2(
 				return _Debug_todo(
 					'Page.Users',
 					{
-						start: {line: 126, column: 13},
-						end: {line: 126, column: 23}
+						start: {line: 118, column: 13},
+						end: {line: 118, column: 23}
 					})('branch \'Failure\' not implemented');
 		}
 	});
