@@ -58,8 +58,8 @@ view model =
                 CreateUserPage m ->
                     CreateUser.view m |> Html.map CreateUserMsg
 
-                UserDetailPage _ ->
-                    Debug.todo "branch 'UserDetailPage' not implemented"
+                UserDetailPage m ->
+                    UserDetail.view m |> Html.map UserDetailMsg
 
                 NotFoundPage ->
                     NotFound.view
@@ -141,6 +141,7 @@ type Msg
     | ChangedUrl Url
     | GotUsersMsg Users.Msg
     | CreateUserMsg CreateUser.Msg
+    | UserDetailMsg UserDetail.Msg
 
 
 
@@ -155,6 +156,10 @@ toUsers model ( userModel, userCmd ) =
 toCreateUser : Model -> ( CreateUser.Model, Cmd CreateUser.Msg ) -> ( Model, Cmd Msg )
 toCreateUser model ( createUserModel, createUserCmd ) =
     ( { model | page = CreateUserPage createUserModel }, Cmd.map CreateUserMsg createUserCmd )
+    
+toUserDetail : Model -> ( UserDetail.Model, Cmd UserDetail.Msg ) -> ( Model, Cmd Msg )
+toUserDetail model ( createUserModel, createUserCmd ) =
+    ( { model | page = UserDetailPage createUserModel }, Cmd.map UserDetailMsg createUserCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -192,6 +197,13 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        UserDetailMsg userDetailMsg ->
+            case model.page of
+                UserDetailPage userDetailModel ->
+                    toUserDetail model (UserDetail.update userDetailMsg userDetailModel)
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 -- SUBSCRIPTIONS
@@ -236,7 +248,11 @@ updateUrl : Url -> Model -> ( Model, Cmd Msg )
 updateUrl url model =
     case Parser.parse parser url of
         Just Users ->
-            Users.init () |> toUsers model
+            let
+                onUserClick userId = Nav.pushUrl model.key (String.concat ["/users/", userId])
+            in
+            
+            Users.init onUserClick |> toUsers model
 
         Just CreateUser ->
             let
@@ -244,6 +260,9 @@ updateUrl url model =
                     Nav.pushUrl model.key "/users"
             in
             CreateUser.init onSuccess |> toCreateUser model
+            
+        Just (UserDetails userId) ->
+            UserDetail.init userId |> toUserDetail model
 
         _ ->
             ( { model | page = NotFoundPage }, Cmd.none )

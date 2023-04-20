@@ -1,11 +1,9 @@
 module Page.UserDetail exposing (Model, Msg, init, update, view)
 
+import API exposing (User, userDecoder)
+import Endpoint exposing (getUserUrl, unwrap)
 import Html exposing (div, text)
 import Http
-import Endpoint exposing (unwrap)
-import API exposing (userDecoder)
-import API exposing (User)
-import Endpoint exposing (getUserUrl)
 
 
 
@@ -14,11 +12,10 @@ import Endpoint exposing (getUserUrl)
 
 type Model
     = Loading
-    | Ok
-        { name : String
-        , email : String
-        , password : String
+    | Success
+        { user : User
         }
+    | Failed
 
 
 type alias UserId =
@@ -27,7 +24,11 @@ type alias UserId =
 
 init : UserId -> ( Model, Cmd Msg )
 init userId =
-  (Loading, getUser userId)
+    ( -- Start in a loading state
+      Loading
+    , -- Immediately query the backend for the provided user
+      getUser userId
+    )
 
 
 
@@ -40,12 +41,15 @@ view model =
         Loading ->
             div [] [ text "Loading..." ]
 
-        Ok m ->
+        Success m ->
             div []
-                [ div [] [ text m.name ]
-                , div [] [ text m.email ]
-                , div [] [ text m.password ]
+                [ div [] [ text m.user.name ]
+                , div [] [ text m.user.email ]
+                , div [] [ text m.user.password ]
                 ]
+
+        Failed ->
+            div [] [ text "Failed to fetch user." ]
 
 
 
@@ -53,13 +57,22 @@ view model =
 
 
 type Msg
-      = GotUser (Result Http.Error User)
+    = GotUser (Result Http.Error User)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model = ( model, Cmd.none )
+update msg _ =
+    case msg of
+        GotUser result ->
+            case result of
+                Ok user ->
+                    ( Success { user = user }, Cmd.none )
 
-    
+                Err _ ->
+                    ( Failed, Cmd.none )
+
+
+
 -- HTTP
 
 

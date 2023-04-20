@@ -1,8 +1,10 @@
 module Page.Users exposing (Model, Msg, init, update, view)
 
-import Endpoint exposing (getUsersUrl, unwrap)
 import API exposing (User, usersDecoder)
+import Endpoint exposing (getUsersUrl, unwrap)
 import Html exposing (div, table, td, text, th, thead, tr)
+import Html.Attributes exposing (classList, style)
+import Html.Events exposing (onClick)
 import Http
 import String exposing (fromInt)
 
@@ -11,36 +13,33 @@ import String exposing (fromInt)
 -- MODEL
 
 
-type Model
+type alias UserId =
+    String
+
+
+type alias OnUserClick =
+    UserId -> Cmd Msg
+
+
+type alias Model =
+    { onUserClick : OnUserClick
+    , state : State
+    }
+
+
+type State
     = Loading
-    | Failure
-    | Loaded State
+    | Failed
+    | Loaded
+        { users : List User
+        }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Loading
+init : OnUserClick -> ( Model, Cmd Msg )
+init onUserClick =
+    ( { onUserClick = onUserClick, state = Loading }
     , getUsers
     )
-
-
-type alias State =
-    { score : Int
-    , firstName : String
-    , lastName : String
-    , inputValue : Int
-    , users : List User
-    }
-
-
-initState : State
-initState =
-    { score = 0
-    , firstName = "Kindson"
-    , lastName = "Munonye"
-    , inputValue = 0
-    , users = []
-    }
 
 
 
@@ -49,7 +48,7 @@ initState =
 
 view : Model -> Html.Html Msg
 view model =
-    case model of
+    case model.state of
         Loaded state ->
             div []
                 [ viewUsers state.users ]
@@ -57,7 +56,7 @@ view model =
         Loading ->
             div [] [ text "Loading..." ]
 
-        Failure ->
+        Failed ->
             div [] [ text "Failed to load users" ]
 
 
@@ -79,13 +78,16 @@ viewUsers users =
 
 toTableRow : User -> Html.Html Msg
 toTableRow user =
+    let
+        userId =
+            fromInt user.id
+    in
     tr []
-        [ td [] [ text (fromInt user.id) ]
+        [ td [ onClick (UserClicked userId), style "cursor" "pointer" ] [ text userId ]
         , td [] [ text user.name ]
         , td [] [ text user.email ]
         , td [] [ text user.password ]
         ]
-
 
 
 -- UPDATE
@@ -94,27 +96,34 @@ toTableRow user =
 type Msg
     = -- Http results
       GotUsers (Result Http.Error (List User))
+    | UserClicked UserId
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case model of
+    case model.state of
         Loaded _ ->
             case msg of
                 GotUsers _ ->
                     ( model, Cmd.none )
+
+                UserClicked userId ->
+                    ( model, model.onUserClick userId )
 
         Loading ->
             case msg of
                 GotUsers result ->
                     case result of
                         Ok users ->
-                            ( Loaded { initState | users = users }, Cmd.none )
+                            ( { model | state = Loaded { users = users } }, Cmd.none )
 
                         Err _ ->
-                            ( Failure, Cmd.none )
+                            ( { model | state = Failed }, Cmd.none )
 
-        Failure ->
+                UserClicked _ ->
+                    ( model, Cmd.none )
+
+        Failed ->
             Debug.todo "branch 'Failure' not implemented"
 
 
