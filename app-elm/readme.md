@@ -1,31 +1,17 @@
 # app-elm
 
+## Initial dev setup
+
+Make sure you have `npm` installed already.
+
+Install Elm by following the guide on the official docs: https://guide.elm-lang.org/install/elm.html
+
+Install `elm-live` (for running the app locally with live reloading): `npm i -g elm-live` 
+
 ## Dev Flow
 
 ### Running the app
 
-You can use Elm's built in `elm reactor` though you have to manually refresh.
-
-Alternatively, you can install and run `elm-live`:
-
-```
-npm i -g elm-live
-```
-
-Then run it like
-```
-elm-live <elm-file>
-```
-
-```
-elm-live src/Main.elm
-```
-
-See: https://www.elm-live.com/
-
-HOWEVER, just this won't work with single page apps (SPAs), which is what we will likely be doing.
-
-instead do this:
 ```
 elm-live src/Main.elm --pushstate
 ```
@@ -40,8 +26,12 @@ This dependency lets us avoid needing npm/yarn, doing any code generation, etc. 
 
 There are also some "gotchas" in the first link that we may run into, with recommendations on how to resolve them
 
+You will likely want to reference
+- A tailwindcss cheat sheet: https://nerdcave.com/tailwind-cheat-sheet
+- Html-to-Elm which can translate html / tailwind examples to elm/tailwind https://html-to-elm.com/ *CAVEAT* This site does not fully support Tailwind3, so until we fix it, we can't just copy paste the code in, but it is a great reference for now.
 
-## Resources
+
+## Other Resources
 
 - https://guide.elm-lang.org/
 - https://kindsonthegenius.com/elm/elm-your-first-elm-program/#t2
