@@ -1,6 +1,11 @@
-module Page.UserDetail exposing (Model, init, Msg, subscriptions, update, view)
+module Page.UserDetail exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html exposing (div, text)
+import Http
+import Endpoint exposing (unwrap)
+import API exposing (userDecoder)
+import API exposing (User)
+import Endpoint exposing (getUserUrl)
 
 
 
@@ -15,9 +20,15 @@ type Model
         , password : String
         }
 
-type alias UserId = String
-init : UserId -> (Model, Cmd Msg)
-init userId  = Debug.todo ""
+
+type alias UserId =
+    String
+
+
+init : UserId -> ( Model, Cmd Msg )
+init userId =
+  (Loading, getUser userId)
+
 
 
 -- VIEW
@@ -42,20 +53,19 @@ view model =
 
 
 type Msg
-    = NothingYet
+      = GotUser (Result Http.Error User)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        NothingYet ->
-            ( model, Cmd.none )
+update msg model = ( model, Cmd.none )
+
+    
+-- HTTP
 
 
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+getUser : UserId -> Cmd Msg
+getUser userId =
+    Http.get
+        { url = unwrap <| getUserUrl userId
+        , expect = Http.expectJson GotUser userDecoder
+        }

@@ -21,3 +21,9 @@ getUsersUrl =
 createUserUrl : Endpoint
 createUserUrl =
     Endpoint "http://localhost:3000/users"
+    
+type alias UserId = String
+
+getUserUrl : UserId -> Endpoint
+getUserUrl userId =
+    Endpoint <| String.concat ["http://localhost:3000/users/", userId]
