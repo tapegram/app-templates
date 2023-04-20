@@ -1,4 +1,4 @@
-module Page.UserDetail exposing (Model, Msg, init, subscriptions, update, view)
+module Page.UserDetail exposing (Model, Msg, init, update, view)
 
 import Html exposing (div, text)
 import Http
