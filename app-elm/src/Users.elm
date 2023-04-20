@@ -32,9 +32,6 @@ type alias State =
     , lastName : String
     , inputValue : Int
     , users : List User
-    , newUserFormName : String
-    , newUserFormEmail : String
-    , newUserFormPassword : String
     }
 
 
@@ -53,9 +50,6 @@ initState =
     , lastName = "Munonye"
     , inputValue = 0
     , users = []
-    , newUserFormName = ""
-    , newUserFormEmail = ""
-    , newUserFormPassword = ""
     }
 
 
@@ -68,20 +62,7 @@ view model =
     case model of
         Loaded state ->
             div []
-                [ text (fromInt state.score)
-                , div [] []
-                , input [ onInput TextChanged ] []
-                , button [ onClick Added ] [ text "Add" ]
-                , div []
-                    [ viewUsers state.users ]
-                , div [] []
-                , div []
-                    [ input [ onInput NewUserFormNameChanged, placeholder "name" ] []
-                    , input [ onInput NewUserFormEmailChanged, placeholder "email" ] []
-                    , input [ onInput NewUserFormPasswordChanged, placeholder "password" ] []
-                    , button [ onClick NewUserFormSubmitted ] [ text "Go!" ]
-                    ]
-                ]
+                [ viewUsers state.users ]
 
         Loading ->
             div [] [ text "Loading..." ]
@@ -120,28 +101,9 @@ toTableRow user =
 -- UPDATE
 
 
-type alias Text =
-    String
-
-
-type alias Key =
-    Int
-
-
-type
-    Msg
-    -- Tutorial stuff to remove later
-    = Added
-    | TextChanged Text
-    | KeyPressed Key
-      -- Http results
-    | GotUsers (Result Http.Error (List User))
-    | UserCreated (Result Http.Error User)
-      -- New User form
-    | NewUserFormNameChanged String
-    | NewUserFormPasswordChanged String
-    | NewUserFormEmailChanged String
-    | NewUserFormSubmitted
+type Msg
+    = -- Http results
+      GotUsers (Result Http.Error (List User))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -149,42 +111,8 @@ update msg model =
     case model of
         Loaded state ->
             case msg of
-                Added ->
-                    ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
-
-                TextChanged newText ->
-                    ( Loaded { state | inputValue = parseInput newText }
-                    , Cmd.none
-                    )
-
                 GotUsers _ ->
                     ( model, Cmd.none )
-
-                UserCreated (Ok user) ->
-                    ( Loaded { state | users = state.users ++ [ user ] }, Cmd.none )
-
-                UserCreated (Err _) ->
-                    Debug.todo "Failed to create user"
-
-                KeyPressed key ->
-                    case key of
-                        13 ->
-                            ( Loaded { state | score = state.score + state.inputValue }, Cmd.none )
-
-                        _ ->
-                            ( Loaded state, Cmd.none )
-
-                NewUserFormNameChanged name ->
-                    ( Loaded { state | newUserFormName = name }, Cmd.none )
-
-                NewUserFormPasswordChanged password ->
-                    ( Loaded { state | newUserFormPassword = password }, Cmd.none )
-
-                NewUserFormEmailChanged email ->
-                    ( Loaded { state | newUserFormEmail = email }, Cmd.none )
-
-                NewUserFormSubmitted ->
-                    ( model, createUser state.newUserFormName state.newUserFormEmail state.newUserFormPassword )
 
         Loading ->
             case msg of
@@ -196,21 +124,8 @@ update msg model =
                         Err _ ->
                             ( Failure, Cmd.none )
 
-                _ ->
-                    ( Loading, Cmd.none )
-
         Failure ->
             Debug.todo "branch 'Failure' not implemented"
-
-
-parseInput : String -> Int
-parseInput text =
-    case toInt text of
-        Just val ->
-            val
-
-        Nothing ->
-            0
 
 
 
@@ -234,12 +149,6 @@ getUsersUrl : Endpoint
 getUsersUrl =
     Endpoint "http://localhost:3000/users"
 
-
-createUserUrl : Endpoint
-createUserUrl =
-    Endpoint "http://localhost:3000/users"
-
-
 getUsers : Cmd Msg
 getUsers =
     Http.get
@@ -250,22 +159,6 @@ getUsers =
 
 
 -- TODO: implement this correctly
-
-
-createUser : String -> String -> String -> Cmd Msg
-createUser name email password =
-    Http.post
-        { url = unwrap createUserUrl
-        , body =
-            Http.jsonBody <|
-                Json.Encode.object
-                    [ ( "name", Json.Encode.string name )
-                    , ( "email", Json.Encode.string email )
-                    , ( "password", Json.Encode.string password )
-                    ]
-        , expect = Http.expectJson UserCreated userDecoder
-        }
-
 
 userDecoder : Decoder User
 userDecoder =

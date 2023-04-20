@@ -6704,8 +6704,8 @@ var $author$project$CreateUser$update = F2(
 					return _Debug_todo(
 						'CreateUser',
 						{
-							start: {line: 75, column: 13},
-							end: {line: 75, column: 23}
+							start: {line: 77, column: 13},
+							end: {line: 77, column: 23}
 						})('Failed to create user');
 				}
 			case 'NewUserFormNameChanged':
@@ -6740,155 +6740,32 @@ var $author$project$Users$Failure = {$: 'Failure'};
 var $author$project$Users$Loaded = function (a) {
 	return {$: 'Loaded', a: a};
 };
-var $author$project$Users$UserCreated = function (a) {
-	return {$: 'UserCreated', a: a};
-};
-var $author$project$Users$createUserUrl = $author$project$Users$Endpoint('http://localhost:3000/users');
-var $author$project$Users$createUser = F3(
-	function (name, email, password) {
-		return $elm$http$Http$post(
-			{
-				body: $elm$http$Http$jsonBody(
-					$elm$json$Json$Encode$object(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(
-								'name',
-								$elm$json$Json$Encode$string(name)),
-								_Utils_Tuple2(
-								'email',
-								$elm$json$Json$Encode$string(email)),
-								_Utils_Tuple2(
-								'password',
-								$elm$json$Json$Encode$string(password))
-							]))),
-				expect: A2($elm$http$Http$expectJson, $author$project$Users$UserCreated, $author$project$Users$userDecoder),
-				url: $author$project$Users$unwrap($author$project$Users$createUserUrl)
-			});
-	});
-var $author$project$Users$initState = {firstName: 'Kindson', inputValue: 0, lastName: 'Munonye', newUserFormEmail: '', newUserFormName: '', newUserFormPassword: '', score: 0, users: _List_Nil};
-var $author$project$Users$parseInput = function (text) {
-	var _v0 = $elm$core$String$toInt(text);
-	if (_v0.$ === 'Just') {
-		var val = _v0.a;
-		return val;
-	} else {
-		return 0;
-	}
-};
+var $author$project$Users$initState = {firstName: 'Kindson', inputValue: 0, lastName: 'Munonye', score: 0, users: _List_Nil};
 var $author$project$Users$update = F2(
 	function (msg, model) {
 		switch (model.$) {
 			case 'Loaded':
 				var state = model.a;
-				switch (msg.$) {
-					case 'Added':
-						return _Utils_Tuple2(
-							$author$project$Users$Loaded(
-								_Utils_update(
-									state,
-									{score: state.score + state.inputValue})),
-							$elm$core$Platform$Cmd$none);
-					case 'TextChanged':
-						var newText = msg.a;
-						return _Utils_Tuple2(
-							$author$project$Users$Loaded(
-								_Utils_update(
-									state,
-									{
-										inputValue: $author$project$Users$parseInput(newText)
-									})),
-							$elm$core$Platform$Cmd$none);
-					case 'GotUsers':
-						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-					case 'UserCreated':
-						if (msg.a.$ === 'Ok') {
-							var user = msg.a.a;
-							return _Utils_Tuple2(
-								$author$project$Users$Loaded(
-									_Utils_update(
-										state,
-										{
-											users: _Utils_ap(
-												state.users,
-												_List_fromArray(
-													[user]))
-										})),
-								$elm$core$Platform$Cmd$none);
-						} else {
-							return _Debug_todo(
-								'Users',
-								{
-									start: {line: 167, column: 21},
-									end: {line: 167, column: 31}
-								})('Failed to create user');
-						}
-					case 'KeyPressed':
-						var key = msg.a;
-						if (key === 13) {
-							return _Utils_Tuple2(
-								$author$project$Users$Loaded(
-									_Utils_update(
-										state,
-										{score: state.score + state.inputValue})),
-								$elm$core$Platform$Cmd$none);
-						} else {
-							return _Utils_Tuple2(
-								$author$project$Users$Loaded(state),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'NewUserFormNameChanged':
-						var name = msg.a;
-						return _Utils_Tuple2(
-							$author$project$Users$Loaded(
-								_Utils_update(
-									state,
-									{newUserFormName: name})),
-							$elm$core$Platform$Cmd$none);
-					case 'NewUserFormPasswordChanged':
-						var password = msg.a;
-						return _Utils_Tuple2(
-							$author$project$Users$Loaded(
-								_Utils_update(
-									state,
-									{newUserFormPassword: password})),
-							$elm$core$Platform$Cmd$none);
-					case 'NewUserFormEmailChanged':
-						var email = msg.a;
-						return _Utils_Tuple2(
-							$author$project$Users$Loaded(
-								_Utils_update(
-									state,
-									{newUserFormEmail: email})),
-							$elm$core$Platform$Cmd$none);
-					default:
-						return _Utils_Tuple2(
-							model,
-							A3($author$project$Users$createUser, state.newUserFormName, state.newUserFormEmail, state.newUserFormPassword));
-				}
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'Loading':
-				if (msg.$ === 'GotUsers') {
-					var result = msg.a;
-					if (result.$ === 'Ok') {
-						var users = result.a;
-						return _Utils_Tuple2(
-							$author$project$Users$Loaded(
-								_Utils_update(
-									$author$project$Users$initState,
-									{users: users})),
-							$elm$core$Platform$Cmd$none);
-					} else {
-						return _Utils_Tuple2($author$project$Users$Failure, $elm$core$Platform$Cmd$none);
-					}
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var users = result.a;
+					return _Utils_Tuple2(
+						$author$project$Users$Loaded(
+							_Utils_update(
+								$author$project$Users$initState,
+								{users: users})),
+						$elm$core$Platform$Cmd$none);
 				} else {
-					return _Utils_Tuple2($author$project$Users$Loading, $elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2($author$project$Users$Failure, $elm$core$Platform$Cmd$none);
 				}
 			default:
 				return _Debug_todo(
 					'Users',
 					{
-						start: {line: 203, column: 13},
-						end: {line: 203, column: 23}
+						start: {line: 128, column: 13},
+						end: {line: 128, column: 23}
 					})('branch \'Failure\' not implemented');
 		}
 	});
@@ -6940,8 +6817,6 @@ var $author$project$Main$update = F2(
 				}
 		}
 	});
-var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
-var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $author$project$CreateUser$NewUserFormEmailChanged = function (a) {
@@ -7054,22 +6929,9 @@ var $author$project$CreateUser$view = function (_v0) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Go!')
-					]))
+					])),
+				A2($elm$html$Html$div, _List_Nil, _List_Nil)
 			]));
-};
-var $author$project$Users$Added = {$: 'Added'};
-var $author$project$Users$NewUserFormEmailChanged = function (a) {
-	return {$: 'NewUserFormEmailChanged', a: a};
-};
-var $author$project$Users$NewUserFormNameChanged = function (a) {
-	return {$: 'NewUserFormNameChanged', a: a};
-};
-var $author$project$Users$NewUserFormPasswordChanged = function (a) {
-	return {$: 'NewUserFormPasswordChanged', a: a};
-};
-var $author$project$Users$NewUserFormSubmitted = {$: 'NewUserFormSubmitted'};
-var $author$project$Users$TextChanged = function (a) {
-	return {$: 'TextChanged', a: a};
 };
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$th = _VirtualDom_node('th');
@@ -7169,74 +7031,7 @@ var $author$project$Users$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text(
-						$elm$core$String$fromInt(state.score)),
-						A2($elm$html$Html$div, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$input,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onInput($author$project$Users$TextChanged)
-							]),
-						_List_Nil),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Users$Added)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Add')
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$author$project$Users$viewUsers(state.users)
-							])),
-						A2($elm$html$Html$div, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$input,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onInput($author$project$Users$NewUserFormNameChanged),
-										$elm$html$Html$Attributes$placeholder('name')
-									]),
-								_List_Nil),
-								A2(
-								$elm$html$Html$input,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onInput($author$project$Users$NewUserFormEmailChanged),
-										$elm$html$Html$Attributes$placeholder('email')
-									]),
-								_List_Nil),
-								A2(
-								$elm$html$Html$input,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onInput($author$project$Users$NewUserFormPasswordChanged),
-										$elm$html$Html$Attributes$placeholder('password')
-									]),
-								_List_Nil),
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onClick($author$project$Users$NewUserFormSubmitted)
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Go!')
-									]))
-							]))
+						$author$project$Users$viewUsers(state.users)
 					]));
 		case 'Loading':
 			return A2(
@@ -7410,22 +7205,22 @@ var $author$project$Main$view = function (model) {
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 62, column: 21},
-						end: {line: 62, column: 31}
+						start: {line: 61, column: 21},
+						end: {line: 61, column: 31}
 					})('branch \'UserDetailPage\' not implemented');
 			default:
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 65, column: 21},
-						end: {line: 65, column: 31}
+						start: {line: 64, column: 21},
+						end: {line: 64, column: 31}
 					})('branch \'NotFoundPage\' not implemented');
 		}
 	}();
 	return {
 		body: _List_fromArray(
 			[
-				A2($elm$html$Html$Lazy$lazy, $author$project$Main$viewHeader, model.page),
+				$author$project$Main$viewHeader(model.page),
 				content,
 				$author$project$Main$viewFooter
 			]),

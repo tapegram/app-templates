@@ -3,6 +3,7 @@ module CreateUser exposing (Model, Msg, init, update, view)
 import Html exposing (button, div, input, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy exposing (lazy)
 import Http
 import Json.Decode exposing (Decoder, field, int, map4, string)
 import Json.Encode
@@ -50,6 +51,7 @@ view _ =
         , input [ onInput NewUserFormEmailChanged, placeholder "email" ] []
         , input [ onInput NewUserFormPasswordChanged, placeholder "password" ] []
         , button [ onClick NewUserFormSubmitted ] [ text "Go!" ]
+        , div [] []
         ]
 
 
@@ -95,12 +97,6 @@ update msg model =
 
 
 -- SUBSCRIPTIONS
-
-
-
-
-
-
 -- HTTP
 
 

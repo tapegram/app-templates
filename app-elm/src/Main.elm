@@ -1,15 +1,14 @@
 module Main exposing (main)
-import CreateUser
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
+import CreateUser
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
 import Html.Lazy exposing (lazy)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
 import Users
-import CreateUser
 
 
 
@@ -69,7 +68,7 @@ view model =
 
     -- Notice that body is a list
     , body =
-        [ lazy viewHeader model.page
+        [ viewHeader model.page
         , content
         , viewFooter
         ]
@@ -151,9 +150,11 @@ toUsers : Model -> ( Users.Model, Cmd Users.Msg ) -> ( Model, Cmd Msg )
 toUsers model ( userModel, userCmd ) =
     ( { model | page = UsersPage userModel }, Cmd.map GotUsersMsg userCmd )
 
+
 toCreateUser : Model -> ( CreateUser.Model, Cmd CreateUser.Msg ) -> ( Model, Cmd Msg )
 toCreateUser model ( createUserModel, createUserCmd ) =
     ( { model | page = CreateUserPage createUserModel }, Cmd.map CreateUserMsg createUserCmd )
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -185,8 +186,11 @@ update msg model =
         CreateUserMsg createUserMsg ->
             case model.page of
                 CreateUserPage createUserModel ->
-                        toCreateUser model (CreateUser.update createUserMsg createUserModel)
-                _ -> ( model, Cmd.none )
+                    toCreateUser model (CreateUser.update createUserMsg createUserModel)
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -214,7 +218,14 @@ main =
         }
 
 
-type alias Flags = () -- Not used for now
+type alias Flags =
+    ()
+
+
+
+-- Not used for now
+
+
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     updateUrl url { page = NotFoundPage, key = key }
@@ -228,10 +239,9 @@ updateUrl url model =
 
         Just CreateUser ->
             let
-                onSuccess _ = 
-                     Nav.pushUrl model.key "/users"
+                onSuccess _ =
+                    Nav.pushUrl model.key "/users"
             in
-            
             CreateUser.init onSuccess |> toCreateUser model
 
         _ ->
