@@ -1,6 +1,6 @@
 use axum::{
     extract::{Extension, Path},
-    http::{Method, StatusCode},
+    http::StatusCode,
     response::{IntoResponse, Response},
     routing::{post, put},
     Json, Router,
@@ -14,7 +14,7 @@ use std::{
 };
 use tower::ServiceBuilder;
 use tower_http::add_extension::AddExtensionLayer;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 
 /*
 Schema
@@ -114,7 +114,15 @@ async fn main() {
         -H 'Content-Type:application/json' \
         -d '{"email": "tapegram+updated@gmail.com", "password": "safepassword", "name": "Charizard"}'
         */
-        .route("/users/:id", put(update_user_handler))
+        .route(
+            "/users/:id",
+            put(update_user_handler)
+                /*
+                curl -X GET localhost:3000/users/<userid> \
+                -H 'Content-Type:application/json'
+                */
+                .get(get_user_handler),
+        )
         .layer(
             // Use tower/tower-http middleware to inject our shared state into our routes
             // Based on example: https://github.com/tokio-rs/axum/blob/dea36db400f27c025b646e5720b9a6784ea4db6e/examples/key-value-store/src/main.rs
@@ -148,6 +156,29 @@ async fn get_users_handler(
 
     let responses: Vec<_> = users.iter().map(|user| UserResponse::from(user)).collect();
     (StatusCode::OK, Json(responses)).into_response()
+}
+
+async fn get_user_handler(
+    // Shared state injected by middleware
+    Extension(state): Extension<SharedState>,
+    Path(id): Path<u32>,
+) -> Response {
+    let users = &state.read().unwrap().users;
+
+    let user = match users.get(&id) {
+        Some(u) => u,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "User not found".to_string(),
+                }),
+            )
+                .into_response();
+        }
+    };
+
+    (StatusCode::OK, Json(UserResponse::from(user))).into_response()
 }
 
 async fn create_user_handler(
