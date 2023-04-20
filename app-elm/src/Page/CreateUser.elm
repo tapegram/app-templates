@@ -1,4 +1,4 @@
-module CreateUser exposing (Model, Msg, init, update, view)
+module Page.CreateUser exposing (Model, Msg, init, update, view)
 
 import Html exposing (button, div, input, text)
 import Html.Attributes exposing (placeholder)

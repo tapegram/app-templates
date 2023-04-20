@@ -2,13 +2,13 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
-import CreateUser
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
+import Page.CreateUser as CreateUser
+import Page.NotFound as NotFound
+import Page.Users as Users
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
-import Users
-import NotFound
 
 
 

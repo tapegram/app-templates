@@ -1,4 +1,4 @@
-module Users exposing (Model, Msg, init, update, view)
+module Page.Users exposing (Model, Msg, init, update, view)
 
 import Html exposing (div, table, td, text, th, thead, tr)
 import Http

@@ -5374,13 +5374,13 @@ var $elm$browser$Browser$application = _Browser_application;
 var $author$project$Main$NotFoundPage = {$: 'NotFoundPage'};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$CreateUser$init = function (onSuccess) {
+var $author$project$Page$CreateUser$init = function (onSuccess) {
 	return _Utils_Tuple2(
 		{email: '', name: '', onSuccess: onSuccess, password: ''},
 		$elm$core$Platform$Cmd$none);
 };
-var $author$project$Users$Loading = {$: 'Loading'};
-var $author$project$Users$GotUsers = function (a) {
+var $author$project$Page$Users$Loading = {$: 'Loading'};
+var $author$project$Page$Users$GotUsers = function (a) {
 	return {$: 'GotUsers', a: a};
 };
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
@@ -6170,16 +6170,16 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Users$Endpoint = function (a) {
+var $author$project$Page$Users$Endpoint = function (a) {
 	return {$: 'Endpoint', a: a};
 };
-var $author$project$Users$getUsersUrl = $author$project$Users$Endpoint('http://localhost:3000/users');
-var $author$project$Users$unwrap = function (_v0) {
+var $author$project$Page$Users$getUsersUrl = $author$project$Page$Users$Endpoint('http://localhost:3000/users');
+var $author$project$Page$Users$unwrap = function (_v0) {
 	var url = _v0.a;
 	return url;
 };
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Users$User = F4(
+var $author$project$Page$Users$User = F4(
 	function (id, email, password, name) {
 		return {email: email, id: id, name: name, password: password};
 	});
@@ -6187,21 +6187,21 @@ var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Users$userDecoder = A5(
+var $author$project$Page$Users$userDecoder = A5(
 	$elm$json$Json$Decode$map4,
-	$author$project$Users$User,
+	$author$project$Page$Users$User,
 	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
 	A2($elm$json$Json$Decode$field, 'email', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'password', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string));
-var $author$project$Users$usersDecoder = $elm$json$Json$Decode$list($author$project$Users$userDecoder);
-var $author$project$Users$getUsers = $elm$http$Http$get(
+var $author$project$Page$Users$usersDecoder = $elm$json$Json$Decode$list($author$project$Page$Users$userDecoder);
+var $author$project$Page$Users$getUsers = $elm$http$Http$get(
 	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Users$GotUsers, $author$project$Users$usersDecoder),
-		url: $author$project$Users$unwrap($author$project$Users$getUsersUrl)
+		expect: A2($elm$http$Http$expectJson, $author$project$Page$Users$GotUsers, $author$project$Page$Users$usersDecoder),
+		url: $author$project$Page$Users$unwrap($author$project$Page$Users$getUsersUrl)
 	});
-var $author$project$Users$init = function (_v0) {
-	return _Utils_Tuple2($author$project$Users$Loading, $author$project$Users$getUsers);
+var $author$project$Page$Users$init = function (_v0) {
+	return _Utils_Tuple2($author$project$Page$Users$Loading, $author$project$Page$Users$getUsers);
 };
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
@@ -6540,7 +6540,7 @@ var $author$project$Main$updateUrl = F2(
 						return A2(
 							$author$project$Main$toUsers,
 							model,
-							$author$project$Users$init(_Utils_Tuple0));
+							$author$project$Page$Users$init(_Utils_Tuple0));
 					case 'CreateUser':
 						var _v2 = _v0.a;
 						var onSuccess = function (_v3) {
@@ -6549,7 +6549,7 @@ var $author$project$Main$updateUrl = F2(
 						return A2(
 							$author$project$Main$toCreateUser,
 							model,
-							$author$project$CreateUser$init(onSuccess));
+							$author$project$Page$CreateUser$init(onSuccess));
 					default:
 						break _v0$2;
 				}
@@ -6620,13 +6620,13 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
-var $author$project$CreateUser$UserCreated = function (a) {
+var $author$project$Page$CreateUser$UserCreated = function (a) {
 	return {$: 'UserCreated', a: a};
 };
-var $author$project$CreateUser$Endpoint = function (a) {
+var $author$project$Page$CreateUser$Endpoint = function (a) {
 	return {$: 'Endpoint', a: a};
 };
-var $author$project$CreateUser$createUserUrl = $author$project$CreateUser$Endpoint('http://localhost:3000/users');
+var $author$project$Page$CreateUser$createUserUrl = $author$project$Page$CreateUser$Endpoint('http://localhost:3000/users');
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
 		_Http_pair,
@@ -6651,22 +6651,22 @@ var $elm$http$Http$post = function (r) {
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$CreateUser$unwrap = function (_v0) {
+var $author$project$Page$CreateUser$unwrap = function (_v0) {
 	var url = _v0.a;
 	return url;
 };
-var $author$project$CreateUser$User = F4(
+var $author$project$Page$CreateUser$User = F4(
 	function (id, email, password, name) {
 		return {email: email, id: id, name: name, password: password};
 	});
-var $author$project$CreateUser$userDecoder = A5(
+var $author$project$Page$CreateUser$userDecoder = A5(
 	$elm$json$Json$Decode$map4,
-	$author$project$CreateUser$User,
+	$author$project$Page$CreateUser$User,
 	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
 	A2($elm$json$Json$Decode$field, 'email', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'password', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string));
-var $author$project$CreateUser$createUser = function (_v0) {
+var $author$project$Page$CreateUser$createUser = function (_v0) {
 	var name = _v0.name;
 	var email = _v0.email;
 	var password = _v0.password;
@@ -6686,12 +6686,12 @@ var $author$project$CreateUser$createUser = function (_v0) {
 							'password',
 							$elm$json$Json$Encode$string(password))
 						]))),
-			expect: A2($elm$http$Http$expectJson, $author$project$CreateUser$UserCreated, $author$project$CreateUser$userDecoder),
-			url: $author$project$CreateUser$unwrap($author$project$CreateUser$createUserUrl)
+			expect: A2($elm$http$Http$expectJson, $author$project$Page$CreateUser$UserCreated, $author$project$Page$CreateUser$userDecoder),
+			url: $author$project$Page$CreateUser$unwrap($author$project$Page$CreateUser$createUserUrl)
 		});
 };
 var $elm$core$Debug$todo = _Debug_todo;
-var $author$project$CreateUser$update = F2(
+var $author$project$Page$CreateUser$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'UserCreated':
@@ -6702,7 +6702,7 @@ var $author$project$CreateUser$update = F2(
 						model.onSuccess(user));
 				} else {
 					return _Debug_todo(
-						'CreateUser',
+						'Page.CreateUser',
 						{
 							start: {line: 76, column: 13},
 							end: {line: 76, column: 23}
@@ -6732,16 +6732,16 @@ var $author$project$CreateUser$update = F2(
 			default:
 				return _Utils_Tuple2(
 					model,
-					$author$project$CreateUser$createUser(
+					$author$project$Page$CreateUser$createUser(
 						{email: model.email, name: model.name, password: model.password}));
 		}
 	});
-var $author$project$Users$Failure = {$: 'Failure'};
-var $author$project$Users$Loaded = function (a) {
+var $author$project$Page$Users$Failure = {$: 'Failure'};
+var $author$project$Page$Users$Loaded = function (a) {
 	return {$: 'Loaded', a: a};
 };
-var $author$project$Users$initState = {firstName: 'Kindson', inputValue: 0, lastName: 'Munonye', score: 0, users: _List_Nil};
-var $author$project$Users$update = F2(
+var $author$project$Page$Users$initState = {firstName: 'Kindson', inputValue: 0, lastName: 'Munonye', score: 0, users: _List_Nil};
+var $author$project$Page$Users$update = F2(
 	function (msg, model) {
 		switch (model.$) {
 			case 'Loaded':
@@ -6751,17 +6751,17 @@ var $author$project$Users$update = F2(
 				if (result.$ === 'Ok') {
 					var users = result.a;
 					return _Utils_Tuple2(
-						$author$project$Users$Loaded(
+						$author$project$Page$Users$Loaded(
 							_Utils_update(
-								$author$project$Users$initState,
+								$author$project$Page$Users$initState,
 								{users: users})),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					return _Utils_Tuple2($author$project$Users$Failure, $elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2($author$project$Page$Users$Failure, $elm$core$Platform$Cmd$none);
 				}
 			default:
 				return _Debug_todo(
-					'Users',
+					'Page.Users',
 					{
 						start: {line: 125, column: 13},
 						end: {line: 125, column: 23}
@@ -6798,7 +6798,7 @@ var $author$project$Main$update = F2(
 					return A2(
 						$author$project$Main$toUsers,
 						model,
-						A2($author$project$Users$update, usersMsg, userModel));
+						A2($author$project$Page$Users$update, usersMsg, userModel));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6810,7 +6810,7 @@ var $author$project$Main$update = F2(
 					return A2(
 						$author$project$Main$toCreateUser,
 						model,
-						A2($author$project$CreateUser$update, createUserMsg, createUserModel));
+						A2($author$project$Page$CreateUser$update, createUserMsg, createUserModel));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6818,16 +6818,16 @@ var $author$project$Main$update = F2(
 	});
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
-var $author$project$CreateUser$NewUserFormEmailChanged = function (a) {
+var $author$project$Page$CreateUser$NewUserFormEmailChanged = function (a) {
 	return {$: 'NewUserFormEmailChanged', a: a};
 };
-var $author$project$CreateUser$NewUserFormNameChanged = function (a) {
+var $author$project$Page$CreateUser$NewUserFormNameChanged = function (a) {
 	return {$: 'NewUserFormNameChanged', a: a};
 };
-var $author$project$CreateUser$NewUserFormPasswordChanged = function (a) {
+var $author$project$Page$CreateUser$NewUserFormPasswordChanged = function (a) {
 	return {$: 'NewUserFormPasswordChanged', a: a};
 };
-var $author$project$CreateUser$NewUserFormSubmitted = {$: 'NewUserFormSubmitted'};
+var $author$project$Page$CreateUser$NewUserFormSubmitted = {$: 'NewUserFormSubmitted'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$input = _VirtualDom_node('input');
@@ -6889,7 +6889,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$CreateUser$view = function (_v0) {
+var $author$project$Page$CreateUser$view = function (_v0) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -6899,7 +6899,7 @@ var $author$project$CreateUser$view = function (_v0) {
 				$elm$html$Html$input,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onInput($author$project$CreateUser$NewUserFormNameChanged),
+						$elm$html$Html$Events$onInput($author$project$Page$CreateUser$NewUserFormNameChanged),
 						$elm$html$Html$Attributes$placeholder('name')
 					]),
 				_List_Nil),
@@ -6907,7 +6907,7 @@ var $author$project$CreateUser$view = function (_v0) {
 				$elm$html$Html$input,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onInput($author$project$CreateUser$NewUserFormEmailChanged),
+						$elm$html$Html$Events$onInput($author$project$Page$CreateUser$NewUserFormEmailChanged),
 						$elm$html$Html$Attributes$placeholder('email')
 					]),
 				_List_Nil),
@@ -6915,7 +6915,7 @@ var $author$project$CreateUser$view = function (_v0) {
 				$elm$html$Html$input,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onInput($author$project$CreateUser$NewUserFormPasswordChanged),
+						$elm$html$Html$Events$onInput($author$project$Page$CreateUser$NewUserFormPasswordChanged),
 						$elm$html$Html$Attributes$placeholder('password')
 					]),
 				_List_Nil),
@@ -6923,7 +6923,7 @@ var $author$project$CreateUser$view = function (_v0) {
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$CreateUser$NewUserFormSubmitted)
+						$elm$html$Html$Events$onClick($author$project$Page$CreateUser$NewUserFormSubmitted)
 					]),
 				_List_fromArray(
 					[
@@ -6932,7 +6932,7 @@ var $author$project$CreateUser$view = function (_v0) {
 				A2($elm$html$Html$div, _List_Nil, _List_Nil)
 			]));
 };
-var $author$project$NotFound$view = A2(
+var $author$project$Page$NotFound$view = A2(
 	$elm$html$Html$div,
 	_List_Nil,
 	_List_fromArray(
@@ -6944,7 +6944,7 @@ var $elm$html$Html$th = _VirtualDom_node('th');
 var $elm$html$Html$thead = _VirtualDom_node('thead');
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$Users$toTableRow = function (user) {
+var $author$project$Page$Users$toTableRow = function (user) {
 	return A2(
 		$elm$html$Html$tr,
 		_List_Nil,
@@ -6981,7 +6981,7 @@ var $author$project$Users$toTableRow = function (user) {
 					]))
 			]));
 };
-var $author$project$Users$viewUsers = function (users) {
+var $author$project$Page$Users$viewUsers = function (users) {
 	return A2(
 		$elm$html$Html$table,
 		_List_Nil,
@@ -7025,10 +7025,10 @@ var $author$project$Users$viewUsers = function (users) {
 									]))
 							]))
 					]),
-					A2($elm$core$List$map, $author$project$Users$toTableRow, users)
+					A2($elm$core$List$map, $author$project$Page$Users$toTableRow, users)
 				])));
 };
-var $author$project$Users$view = function (model) {
+var $author$project$Page$Users$view = function (model) {
 	switch (model.$) {
 		case 'Loaded':
 			var state = model.a;
@@ -7037,7 +7037,7 @@ var $author$project$Users$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$author$project$Users$viewUsers(state.users)
+						$author$project$Page$Users$viewUsers(state.users)
 					]));
 		case 'Loading':
 			return A2(
@@ -7200,13 +7200,13 @@ var $author$project$Main$view = function (model) {
 				return A2(
 					$elm$html$Html$map,
 					$author$project$Main$GotUsersMsg,
-					$author$project$Users$view(m));
+					$author$project$Page$Users$view(m));
 			case 'CreateUserPage':
 				var m = _v0.a;
 				return A2(
 					$elm$html$Html$map,
 					$author$project$Main$CreateUserMsg,
-					$author$project$CreateUser$view(m));
+					$author$project$Page$CreateUser$view(m));
 			case 'UserDetailPage':
 				return _Debug_todo(
 					'Main',
@@ -7215,7 +7215,7 @@ var $author$project$Main$view = function (model) {
 						end: {line: 61, column: 31}
 					})('branch \'UserDetailPage\' not implemented');
 			default:
-				return $author$project$NotFound$view;
+				return $author$project$Page$NotFound$view;
 		}
 	}();
 	return {
