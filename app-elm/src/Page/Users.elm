@@ -2,9 +2,8 @@ module Page.Users exposing (Model, Msg, init, update, view)
 
 import API exposing (User, usersDecoder)
 import Endpoint exposing (getUsersUrl, unwrap)
-import Html exposing (div, table, td, text, th, thead, tr)
-import Html.Attributes exposing (classList, style)
-import Html.Events exposing (onClick)
+import Html.Styled as Html exposing (div, table, td, text, th, thead, tr)
+import Html.Styled.Events exposing (onClick)
 import Http
 import String exposing (fromInt)
 
@@ -83,7 +82,7 @@ toTableRow user =
             fromInt user.id
     in
     tr []
-        [ td [ onClick (UserClicked userId), style "cursor" "pointer" ] [ text userId ]
+        [ td [ onClick (UserClicked userId) ] [ text userId ]
         , td [] [ text user.name ]
         , td [] [ text user.email ]
         , td [] [ text user.password ]

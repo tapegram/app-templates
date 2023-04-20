@@ -2,7 +2,7 @@ module Page.UserDetail exposing (Model, Msg, init, update, view)
 
 import API exposing (User, userDecoder)
 import Endpoint exposing (getUserUrl, unwrap)
-import Html exposing (div, text)
+import Html.Styled as Html exposing (div, text)
 import Http
 
 

@@ -2,14 +2,15 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
-import Html exposing (Html, a, footer, h1, li, nav, text, ul)
-import Html.Attributes exposing (classList, href)
+import Html.Styled as Html exposing (Html, a, footer, h1, li, nav, text, ul)
+import Html.Styled.Attributes exposing (classList, href)
 import Page.CreateUser as CreateUser
 import Page.NotFound as NotFound
 import Page.Users as Users
 import Page.UserDetail as UserDetail
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
+import Html.Styled exposing (toUnstyled)
 
 
 
@@ -69,7 +70,8 @@ view model =
 
     -- Notice that body is a list
     , body =
-        [ viewHeader model.page
+        -- Mapping all of our "styled" html types to the "unstyled" default that the Elm runtime needs
+        List.map toUnstyled[ viewHeader model.page
         , content
         , viewFooter
         ]

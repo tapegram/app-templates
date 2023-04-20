@@ -24,7 +24,7 @@ init _ =
 
 
 view : Model -> Html.Html Msg
-view model =
+view _ =
     div [] [ text "Hello World" ]
 
 
