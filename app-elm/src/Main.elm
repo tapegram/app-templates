@@ -2,15 +2,19 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
-import Html.Styled as Html exposing (Html, a, footer, h1, li, nav, text, ul)
-import Html.Styled.Attributes exposing (classList, href)
+import Css
+import Html.Styled as Html exposing (Html, a, div, footer, h1, li, nav, text, toUnstyled, ul)
+import Html.Styled.Attributes as Attr exposing (classList, href)
 import Page.CreateUser as CreateUser
 import Page.NotFound as NotFound
-import Page.Users as Users
 import Page.UserDetail as UserDetail
+import Page.Users as Users
+import Tailwind.Breakpoints as Breakpoints
+import Tailwind.Theme as Tw
+import Tailwind.Utilities as Tw
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
-import Html.Styled exposing (toUnstyled)
+import Html.Styled exposing (header)
 
 
 
@@ -70,17 +74,24 @@ view model =
 
     -- Notice that body is a list
     , body =
-        -- Mapping all of our "styled" html types to the "unstyled" default that the Elm runtime needs
-        List.map toUnstyled[ viewHeader model.page
-        , content
-        , viewFooter
-        ]
+        List.map toUnstyled
+            [ div [ Attr.css [ Tw.flex, Tw.flex_col, Tw.h_screen, Tw.justify_between ] ]
+                [ -- Mapping all of our "styled" html types to the "unstyled" default that the Elm runtime needs
+                  viewHeader model.page
+                , div [ Attr.css [ 
+                    -- Centering content vertically
+                    Tw.mb_auto
+                    -- Some padding to get away from the edges
+                    , Tw.p_10] ] [ content ]
+                , viewFooter
+                ]
+            ]
     }
 
 
 viewFooter : Html msg
 viewFooter =
-    footer [] [ text "One is never alone with a rubber duck. - Douglas Adams" ]
+    footer [ Attr.css [ Tw.bg_color Tw.gray_100, Tw.h_10 ] ] [ text "The Footer" ]
 
 
 viewHeader : Page -> Html Msg
@@ -109,7 +120,7 @@ viewHeader page =
                 ]
                 [ a [ href url ] [ text caption ] ]
     in
-    nav [] [ logo, links ]
+    header [Attr.css [Tw.h_40, Tw.bg_color Tw.gray_100]] [nav [] [ logo, links ]]
 
 
 isActive : { link : Route, page : Page } -> Bool
@@ -127,7 +138,7 @@ isActive { link, page } =
         ( CreateUser, _ ) ->
             False
 
-        ( UserDetails _, UserDetailPage _) ->
+        ( UserDetails _, UserDetailPage _ ) ->
             True
 
         ( UserDetails _, _ ) ->
@@ -158,7 +169,8 @@ toUsers model ( userModel, userCmd ) =
 toCreateUser : Model -> ( CreateUser.Model, Cmd CreateUser.Msg ) -> ( Model, Cmd Msg )
 toCreateUser model ( createUserModel, createUserCmd ) =
     ( { model | page = CreateUserPage createUserModel }, Cmd.map CreateUserMsg createUserCmd )
-    
+
+
 toUserDetail : Model -> ( UserDetail.Model, Cmd UserDetail.Msg ) -> ( Model, Cmd Msg )
 toUserDetail model ( createUserModel, createUserCmd ) =
     ( { model | page = UserDetailPage createUserModel }, Cmd.map UserDetailMsg createUserCmd )
@@ -208,6 +220,7 @@ update msg model =
                     ( model, Cmd.none )
 
 
+
 -- SUBSCRIPTIONS
 
 
@@ -251,9 +264,9 @@ updateUrl url model =
     case Parser.parse parser url of
         Just Users ->
             let
-                onUserClick userId = Nav.pushUrl model.key (String.concat ["/users/", userId])
+                onUserClick userId =
+                    Nav.pushUrl model.key (String.concat [ "/users/", userId ])
             in
-            
             Users.init onUserClick |> toUsers model
 
         Just CreateUser ->
@@ -262,7 +275,7 @@ updateUrl url model =
                     Nav.pushUrl model.key "/users"
             in
             CreateUser.init onSuccess |> toCreateUser model
-            
+
         Just (UserDetails userId) ->
             UserDetail.init userId |> toUserDetail model
 
