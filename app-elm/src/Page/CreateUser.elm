@@ -1,13 +1,12 @@
 module Page.CreateUser exposing (Model, Msg, init, update, view)
 
-import API exposing (userDecoder)
+import API exposing (User, userDecoder)
 import Endpoint exposing (createUserUrl, unwrap)
 import Html.Styled as Html exposing (button, div, input, text)
 import Html.Styled.Attributes exposing (placeholder)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Json.Encode
-import API exposing (User)
 
 
 

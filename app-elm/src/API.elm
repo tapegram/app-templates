@@ -10,6 +10,7 @@ type alias User =
     }
 
 
+
 userDecoder : Decoder User
 userDecoder =
     map4 User
