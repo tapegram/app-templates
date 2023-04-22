@@ -10,4 +10,8 @@ async-graphql = "5.0.7"
 async-graphql-axum = "5.0.7"
 axum = { version = "0.6.16", features = ["headers"] }
 hyper = "0.14.26"
-tokio = { verion = "1.27.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0.160", features = ["derive"] }
+# Added slab for model -- Should this be a separate crate?
+# ghttps://github.com/async-graphql/examples/blob/master/models/starwars/Cargo.toml
+slab = "0.4.8"
+tokio = { verion = "1.27.0", features = ["full"] }

@@ -2,6 +2,8 @@
 
 Based on the starwars example here:
 
-https://github.com/async-graphql/examples/blob/master/axum/starwars/
+- https://oliverjumpertz.com/how-to-build-a-powerful-graphql-api-with-rust/
+- https://github.com/async-graphql/examples/blob/master/axum/starwars/
+
 
 
