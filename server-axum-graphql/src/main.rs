@@ -1,14 +1,48 @@
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
+
 use crate::model::{MutationRoot, QueryRoot};
 use crate::routes::{graphql_handler, graphql_playground, health};
 use async_graphql::{EmptySubscription, Schema};
 use axum::{extract::Extension, routing::get, Router, Server};
+use serde::Deserialize;
 
 mod model;
 mod routes;
 
+/**
+ * Core Models
+ */
+
+type UserId = u32;
+
+#[derive(Debug, Deserialize, Clone, Eq, Hash, PartialEq)]
+struct User {
+    id: UserId,
+    email: String,
+    password: String,
+    name: String,
+}
+
+/**
+ * App State
+ *
+ * Faking with just in memory stuff for now
+ *
+ */
+#[derive(Default)]
+struct State {
+    users: HashMap<u32, User>,
+}
+
+// Wrapping the state in a shared type so it can be shared across threads
+type SharedState = Arc<RwLock<State>>;
+
 #[tokio::main]
 async fn main() {
-    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(SharedState::default())
+        .finish();
     let app = Router::new()
         .route("/", get(graphql_playground).post(graphql_handler))
         .route("/health", get(health))
