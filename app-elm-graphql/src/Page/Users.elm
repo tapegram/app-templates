@@ -32,14 +32,6 @@ type alias Model =
     }
 
 
-type State
-    = Loading
-    | Failed
-    | Loaded
-        { users : List User
-        }
-
-
 init : OnUserClick -> ( Model, Cmd Msg )
 init onUserClick =
     ( { onUserClick = onUserClick, users = RemoteData.Loading }
@@ -117,7 +109,10 @@ update msg model =
         UserClicked userId ->
             ( model, model.onUserClick userId )
 
+
+
 -- GraphQL
+
 
 type alias Response =
     List User

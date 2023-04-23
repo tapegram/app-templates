@@ -1,31 +1,33 @@
 module Page.UserDetail exposing (Model, Msg, init, update, view)
 
 import API exposing (User, userDecoder)
-import Endpoint exposing (getUserUrl, unwrap)
+import Endpoint exposing (graphQLUrl, unwrap)
+import Graphql.Http exposing (queryRequest, send)
+import Graphql.Operation exposing (RootQuery)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
 import Html.Styled as Html exposing (div, text)
-import Http
+import RemoteData exposing (RemoteData)
+import UsersApi.Object as GQLTypes
+import UsersApi.Object.User as UserFields
+import UsersApi.Query as Query
 
 
 
 -- MODEL
 
 
-type Model
-    = Loading
-    | Success
-        { user : User
-        }
-    | Failed
+type alias Model =
+    { user : RemoteData (Graphql.Http.Error User) User }
 
 
 type alias UserId =
-    String
+    Int
 
 
 init : UserId -> ( Model, Cmd Msg )
 init userId =
     ( -- Start in a loading state
-      Loading
+    { user = RemoteData.Loading }
     , -- Immediately query the backend for the provided user
       getUser userId
     )
@@ -37,19 +39,22 @@ init userId =
 
 view : Model -> Html.Html Msg
 view model =
-    case model of
-        Loading ->
+    case model.user of
+        RemoteData.Loading ->
             div [] [ text "Loading..." ]
 
-        Success m ->
+        RemoteData.Success user ->
             div []
-                [ div [] [ text m.user.name ]
-                , div [] [ text m.user.email ]
-                , div [] [ text m.user.password ]
+                [ div [] [ text user.name ]
+                , div [] [ text user.email ]
+                , div [] [ text user.password ]
                 ]
 
-        Failed ->
+        RemoteData.Failure _ ->
             div [] [ text "Failed to fetch user." ]
+
+        RemoteData.NotAsked ->
+            div [] [ text "Preparing to fetch user..." ]
 
 
 
@@ -57,28 +62,37 @@ view model =
 
 
 type Msg
-    = GotUser (Result Http.Error User)
+    = GotUser (RemoteData (Graphql.Http.Error User) User)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg _ =
+update msg model =
     case msg of
         GotUser result ->
-            case result of
-                Ok user ->
-                    ( Success { user = user }, Cmd.none )
-
-                Err _ ->
-                    ( Failed, Cmd.none )
+            ( { model | user = result }, Cmd.none )
 
 
-
--- HTTP
+query : UserId -> SelectionSet User RootQuery
+query userId =
+    let
+        args =
+            Query.UserRequiredArguments
+                userId
+    in
+    Query.user args usersSelection
 
 
 getUser : UserId -> Cmd Msg
 getUser userId =
-    Http.get
-        { url = unwrap <| getUserUrl userId
-        , expect = Http.expectJson GotUser userDecoder
-        }
+    query userId
+        |> queryRequest (unwrap graphQLUrl)
+        |> send (RemoteData.fromResult >> GotUser)
+
+
+usersSelection : SelectionSet User GQLTypes.User
+usersSelection =
+    SelectionSet.map4 User
+        UserFields.id
+        UserFields.name
+        UserFields.email
+        UserFields.password

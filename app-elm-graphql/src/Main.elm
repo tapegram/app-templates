@@ -2,19 +2,16 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
-import Css
-import Html.Styled as Html exposing (Html, a, div, footer, h1, li, nav, text, toUnstyled, ul)
+import Html.Styled as Html exposing (Html, a, div, footer, h1, header, li, nav, text, toUnstyled, ul)
 import Html.Styled.Attributes as Attr exposing (classList, href)
 import Page.CreateUser as CreateUser
 import Page.NotFound as NotFound
 import Page.UserDetail as UserDetail
 import Page.Users as Users
-import Tailwind.Breakpoints as Breakpoints
 import Tailwind.Theme as Tw
 import Tailwind.Utilities as Tw
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s)
-import Html.Styled exposing (header)
 
 
 
@@ -78,11 +75,16 @@ view model =
             [ div [ Attr.css [ Tw.flex, Tw.flex_col, Tw.h_screen, Tw.justify_between ] ]
                 [ -- Mapping all of our "styled" html types to the "unstyled" default that the Elm runtime needs
                   viewHeader model.page
-                , div [ Attr.css [ 
-                    -- Centering content vertically
-                    Tw.mb_auto
-                    -- Some padding to get away from the edges
-                    , Tw.p_10] ] [ content ]
+                , div
+                    [ Attr.css
+                        [ -- Centering content vertically
+                          Tw.mb_auto
+
+                        -- Some padding to get away from the edges
+                        , Tw.p_10
+                        ]
+                    ]
+                    [ content ]
                 , viewFooter
                 ]
             ]
@@ -120,7 +122,7 @@ viewHeader page =
                 ]
                 [ a [ href url ] [ text caption ] ]
     in
-    header [Attr.css [Tw.h_40, Tw.bg_color Tw.gray_100]] [nav [] [ logo, links ]]
+    header [ Attr.css [ Tw.h_40, Tw.bg_color Tw.gray_100 ] ] [ nav [] [ logo, links ] ]
 
 
 isActive : { link : Route, page : Page } -> Bool
@@ -277,7 +279,12 @@ updateUrl url model =
             CreateUser.init onSuccess |> toCreateUser model
 
         Just (UserDetails userId) ->
-            UserDetail.init userId |> toUserDetail model
+            case String.toInt userId of
+                Just id ->
+                    UserDetail.init id |> toUserDetail model
+
+                Nothing ->
+                    ( { model | page = NotFoundPage }, Cmd.none )
 
         _ ->
             ( { model | page = NotFoundPage }, Cmd.none )
