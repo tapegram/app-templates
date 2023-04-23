@@ -16,3 +16,8 @@ and then visit `http://localhost:3000`
 - [x] Request/Response types
 - [] Writing tests
 - [] Connecting to a DB
+
+
+## How to Run Tests
+
+``` cargo watch -q -c -w tests/ -x "test -q tests_1 -- --nocapture" ```
