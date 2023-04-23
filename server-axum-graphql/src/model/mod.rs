@@ -71,7 +71,7 @@ impl MutationRoot {
         };
 
         // We should explicitly handle a possible failure instead of exploding
-        let users = &_ctx
+        let _users = &_ctx
             .data::<SharedState>()
             .unwrap()
             .write()

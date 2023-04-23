@@ -27,7 +27,7 @@ type alias UserId =
 init : UserId -> ( Model, Cmd Msg )
 init userId =
     ( -- Start in a loading state
-    { user = RemoteData.Loading }
+      { user = RemoteData.Loading }
     , -- Immediately query the backend for the provided user
       getUser userId
     )
@@ -72,7 +72,9 @@ update msg model =
             ( { model | user = result }, Cmd.none )
 
 
+
 -- GRAPHQL
+
 
 query : UserId -> SelectionSet User RootQuery
 query userId =

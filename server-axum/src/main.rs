@@ -1,31 +1,27 @@
 pub use self::error::{Error, Result};
+use self::model::SharedState;
 use axum::Router;
 use model::State;
-use serde::{Serialize};
-use std::sync::{RwLock};
-use std::{
-    net::SocketAddr,
-};
+use serde::Serialize;
+use std::net::SocketAddr;
+use std::sync::RwLock;
 use tower::ServiceBuilder;
 use tower_http::add_extension::AddExtensionLayer;
 use tower_http::cors::CorsLayer;
-use self::model::SharedState;
 
-mod model;
 mod error;
+mod model;
 mod web;
-
 
 #[derive(Serialize)]
 struct ErrorResponse {
     error: String,
 }
 
-
 #[tokio::main]
 async fn main() {
     let state = State::new().await;
-    let shared_state = SharedState::new(RwLock::new(state)); 
+    let shared_state = SharedState::new(RwLock::new(state));
     // Route all requests on "/" endpoint to anonymous handler.
     //
     // A handler is an async function which returns something that implements
@@ -58,3 +54,4 @@ async fn main() {
         .await
         .unwrap();
 }
+
