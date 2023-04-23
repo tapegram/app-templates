@@ -1,6 +1,6 @@
-use crate::model::QueryRoot;
+use crate::model::{MutationRoot, QueryRoot};
 use crate::routes::{graphql_handler, graphql_playground, health};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 use axum::{extract::Extension, routing::get, Router, Server};
 
 mod model;
@@ -8,7 +8,7 @@ mod routes;
 
 #[tokio::main]
 async fn main() {
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription).finish();
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
     let app = Router::new()
         .route("/", get(graphql_playground).post(graphql_handler))
         .route("/health", get(health))

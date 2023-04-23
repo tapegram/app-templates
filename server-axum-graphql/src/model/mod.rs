@@ -1,9 +1,18 @@
-use async_graphql::{Context, Object, Schema, SimpleObject};
-use async_graphql::{EmptyMutation, EmptySubscription};
+use async_graphql::EmptySubscription;
+use async_graphql::{Context, Object, Result, Schema, SimpleObject};
 
-pub(crate) type ServiceSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
+pub(crate) type ServiceSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
 pub(crate) struct QueryRoot;
+pub(crate) struct MutationRoot;
+
+#[derive(SimpleObject, Clone)]
+struct User {
+    id: u32,
+    name: String,
+    email: String,
+    password: String,
+}
 
 #[Object] // Macro wires Rust struct together with the underlying framework logic of
           // async-graphql
@@ -35,10 +44,15 @@ impl QueryRoot {
     }
 }
 
-#[derive(SimpleObject, Clone)]
-struct User {
-    id: u32,
-    name: String,
-    email: String,
-    password: String,
+#[Object]
+impl MutationRoot {
+    async fn create_user(&self, name: String, password: String, email: String) -> Result<User> {
+        let user = User {
+            id: 123,
+            name: name.clone(),
+            email: email.clone(),
+            password: password.clone(),
+        };
+        Ok(user)
+    }
 }
