@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module UsersAPI.Interface exposing (..)
+module UsersApi.Interface exposing (..)
 
 
 placeholder : String

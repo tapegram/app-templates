@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module UsersAPI.Query exposing (..)
+module UsersApi.Query exposing (..)
 
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
@@ -11,16 +11,16 @@ import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode exposing (Decoder)
-import UsersAPI.InputObject
-import UsersAPI.Interface
-import UsersAPI.Object
-import UsersAPI.Scalar
-import UsersAPI.ScalarCodecs
-import UsersAPI.Union
+import UsersApi.InputObject
+import UsersApi.Interface
+import UsersApi.Object
+import UsersApi.Scalar
+import UsersApi.ScalarCodecs
+import UsersApi.Union
 
 
 users :
-    SelectionSet decodesTo UsersAPI.Object.User
+    SelectionSet decodesTo UsersApi.Object.User
     -> SelectionSet (List decodesTo) RootQuery
 users object____ =
     Object.selectionForCompositeField "users" [] object____ (Basics.identity >> Decode.list)
@@ -32,7 +32,7 @@ type alias UserRequiredArguments =
 
 user :
     UserRequiredArguments
-    -> SelectionSet decodesTo UsersAPI.Object.User
+    -> SelectionSet decodesTo UsersApi.Object.User
     -> SelectionSet decodesTo RootQuery
 user requiredArgs____ object____ =
     Object.selectionForCompositeField "user" [ Argument.required "id" requiredArgs____.id Encode.int ] object____ Basics.identity

@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module UsersAPI.Object exposing (..)
+module UsersApi.Object exposing (..)
 
 
 type User

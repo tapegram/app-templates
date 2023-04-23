@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module UsersAPI.Object.User exposing (..)
+module UsersApi.Object.User exposing (..)
 
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
@@ -11,29 +11,29 @@ import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode
-import UsersAPI.InputObject
-import UsersAPI.Interface
-import UsersAPI.Object
-import UsersAPI.Scalar
-import UsersAPI.ScalarCodecs
-import UsersAPI.Union
+import UsersApi.InputObject
+import UsersApi.Interface
+import UsersApi.Object
+import UsersApi.Scalar
+import UsersApi.ScalarCodecs
+import UsersApi.Union
 
 
-id : SelectionSet Int UsersAPI.Object.User
+id : SelectionSet Int UsersApi.Object.User
 id =
     Object.selectionForField "Int" "id" [] Decode.int
 
 
-name : SelectionSet String UsersAPI.Object.User
+name : SelectionSet String UsersApi.Object.User
 name =
     Object.selectionForField "String" "name" [] Decode.string
 
 
-email : SelectionSet String UsersAPI.Object.User
+email : SelectionSet String UsersApi.Object.User
 email =
     Object.selectionForField "String" "email" [] Decode.string
 
 
-password : SelectionSet String UsersAPI.Object.User
+password : SelectionSet String UsersApi.Object.User
 password =
     Object.selectionForField "String" "password" [] Decode.string

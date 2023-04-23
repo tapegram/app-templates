@@ -1,11 +1,17 @@
 module Page.Users exposing (Model, Msg, init, update, view)
 
-import API exposing (User, usersDecoder)
-import Endpoint exposing (getUsersUrl, unwrap)
+import API exposing (User)
+import Endpoint exposing (graphQLUrl, unwrap)
+import Graphql.Http exposing (queryRequest, send)
+import Graphql.Operation exposing (RootQuery)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
 import Html.Styled as Html exposing (div, table, td, text, th, thead, tr)
 import Html.Styled.Events exposing (onClick)
-import Http
+import RemoteData exposing (RemoteData)
 import String exposing (fromInt)
+import UsersApi.Object as GQLTypes
+import UsersApi.Object.User as UserFields
+import UsersApi.Query as Query
 
 
 
@@ -22,7 +28,7 @@ type alias OnUserClick =
 
 type alias Model =
     { onUserClick : OnUserClick
-    , state : State
+    , users : RemoteData (Graphql.Http.Error Response) Response
     }
 
 
@@ -36,7 +42,7 @@ type State
 
 init : OnUserClick -> ( Model, Cmd Msg )
 init onUserClick =
-    ( { onUserClick = onUserClick, state = Loading }
+    ( { onUserClick = onUserClick, users = RemoteData.Loading }
     , getUsers
     )
 
@@ -47,16 +53,19 @@ init onUserClick =
 
 view : Model -> Html.Html Msg
 view model =
-    case model.state of
-        Loaded state ->
-            div []
-                [ viewUsers state.users ]
-
-        Loading ->
+    case model.users of
+        RemoteData.Loading ->
             div [] [ text "Loading..." ]
 
-        Failed ->
+        RemoteData.NotAsked ->
+            div [] [ text "Not asked..." ]
+
+        RemoteData.Failure _ ->
             div [] [ text "Failed to load users" ]
+
+        RemoteData.Success users ->
+            div []
+                [ viewUsers users ]
 
 
 viewUsers : List User -> Html.Html Msg
@@ -89,50 +98,47 @@ toTableRow user =
         ]
 
 
+
 -- UPDATE
 
 
 type Msg
     = -- Http results
-      GotUsers (Result Http.Error (List User))
+      GotUsers (RemoteData (Graphql.Http.Error Response) Response)
     | UserClicked UserId
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case model.state of
-        Loaded _ ->
-            case msg of
-                GotUsers _ ->
-                    ( model, Cmd.none )
+    case msg of
+        GotUsers result ->
+            ( { model | users = result }, Cmd.none )
 
-                UserClicked userId ->
-                    ( model, model.onUserClick userId )
+        UserClicked userId ->
+            ( model, model.onUserClick userId )
 
-        Loading ->
-            case msg of
-                GotUsers result ->
-                    case result of
-                        Ok users ->
-                            ( { model | state = Loaded { users = users } }, Cmd.none )
+-- GraphQL
 
-                        Err _ ->
-                            ( { model | state = Failed }, Cmd.none )
-
-                UserClicked _ ->
-                    ( model, Cmd.none )
-
-        Failed ->
-            Debug.todo "branch 'Failure' not implemented"
+type alias Response =
+    List User
 
 
-
--- HTTP
+query : SelectionSet Response RootQuery
+query =
+    Query.users usersSelection
 
 
 getUsers : Cmd Msg
 getUsers =
-    Http.get
-        { url = unwrap getUsersUrl
-        , expect = Http.expectJson GotUsers usersDecoder
-        }
+    query
+        |> queryRequest (unwrap graphQLUrl)
+        |> send (RemoteData.fromResult >> GotUsers)
+
+
+usersSelection : SelectionSet User GQLTypes.User
+usersSelection =
+    SelectionSet.map4 User
+        UserFields.id
+        UserFields.name
+        UserFields.email
+        UserFields.password

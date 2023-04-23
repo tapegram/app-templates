@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module UsersAPI.Scalar exposing (Codecs, Id(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
+module UsersApi.Scalar exposing (Codecs, Id(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
 
 import Graphql.Codec exposing (Codec)
 import Graphql.Internal.Builder.Object as Object
