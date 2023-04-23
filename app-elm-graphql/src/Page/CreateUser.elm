@@ -1,12 +1,17 @@
 module Page.CreateUser exposing (Model, Msg, init, update, view)
 
-import API exposing (User, userDecoder)
-import Endpoint exposing (createUserUrl, unwrap)
+import API exposing (User)
+import Endpoint exposing (graphQLUrl, unwrap)
+import Graphql.Http exposing (mutationRequest, send)
+import Graphql.Operation exposing (RootMutation)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
 import Html.Styled as Html exposing (button, div, input, text)
 import Html.Styled.Attributes exposing (placeholder)
 import Html.Styled.Events exposing (onClick, onInput)
-import Http
-import Json.Encode
+import RemoteData exposing (RemoteData)
+import UsersApi.Mutation as Mutation
+import UsersApi.Object as GQLTypes
+import UsersApi.Object.User as UserFields
 
 
 
@@ -22,12 +27,13 @@ type alias Model =
     , email : String
     , password : String
     , onSuccess : OnSuccess
+    , result : RemoteData (Graphql.Http.Error User) User
     }
 
 
 init : OnSuccess -> ( Model, Cmd Msg )
 init onSuccess =
-    ( { name = "", email = "", password = "", onSuccess = onSuccess }
+    ( { name = "", email = "", password = "", onSuccess = onSuccess, result = RemoteData.NotAsked }
     , Cmd.none
     )
 
@@ -37,9 +43,21 @@ init onSuccess =
 
 
 view : Model -> Html.Html Msg
-view _ =
+view model =
     div []
-        [ input [ onInput NewUserFormNameChanged, placeholder "name" ] []
+        [ case model.result of
+            RemoteData.NotAsked ->
+                div [] []
+
+            RemoteData.Loading ->
+                div [] [ text "Submitting..." ]
+
+            RemoteData.Failure _ ->
+                div [] [ text "Something went wrong..." ]
+
+            RemoteData.Success _ ->
+                div [] [ text "Success! Redirecting..." ]
+        , input [ onInput NewUserFormNameChanged, placeholder "name" ] []
         , input [ onInput NewUserFormEmailChanged, placeholder "email" ] []
         , input [ onInput NewUserFormPasswordChanged, placeholder "password" ] []
         , button [ onClick NewUserFormSubmitted ] [ text "Go!" ]
@@ -52,7 +70,7 @@ view _ =
 
 
 type Msg
-    = UserCreated (Result Http.Error User)
+    = UserCreated (RemoteData (Graphql.Http.Error User) User)
     | NewUserFormNameChanged String
     | NewUserFormPasswordChanged String
     | NewUserFormEmailChanged String
@@ -62,11 +80,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UserCreated (Ok user) ->
-            ( model, model.onSuccess user )
+        UserCreated (RemoteData.Success user) ->
+            ( { model | result = RemoteData.Success user }, model.onSuccess user )
 
-        UserCreated (Err _) ->
-            Debug.todo "Failed to create user"
+        UserCreated result ->
+            ( { model | result = result }, Cmd.none )
 
         NewUserFormNameChanged name ->
             ( { model | name = name }, Cmd.none )
@@ -91,16 +109,29 @@ update msg model =
 -- HTTP
 
 
+mutation : { name : String, email : String, password : String } -> SelectionSet User RootMutation
+mutation { name, email, password } =
+    let
+        args =
+            Mutation.CreateUserRequiredArguments
+                name
+                email
+                password
+    in
+    Mutation.createUser args usersSelection
+
+
+usersSelection : SelectionSet User GQLTypes.User
+usersSelection =
+    SelectionSet.map4 User
+        UserFields.id
+        UserFields.name
+        UserFields.email
+        UserFields.password
+
+
 createUser : { name : String, email : String, password : String } -> Cmd Msg
-createUser { name, email, password } =
-    Http.post
-        { url = unwrap createUserUrl
-        , body =
-            Http.jsonBody <|
-                Json.Encode.object
-                    [ ( "name", Json.Encode.string name )
-                    , ( "email", Json.Encode.string email )
-                    , ( "password", Json.Encode.string password )
-                    ]
-        , expect = Http.expectJson UserCreated userDecoder
-        }
+createUser args =
+    mutation args
+        |> mutationRequest (unwrap graphQLUrl)
+        |> send (RemoteData.fromResult >> UserCreated)

@@ -1,6 +1,6 @@
 module Page.UserDetail exposing (Model, Msg, init, update, view)
 
-import API exposing (User, userDecoder)
+import API exposing (User)
 import Endpoint exposing (graphQLUrl, unwrap)
 import Graphql.Http exposing (queryRequest, send)
 import Graphql.Operation exposing (RootQuery)
@@ -71,6 +71,8 @@ update msg model =
         GotUser result ->
             ( { model | user = result }, Cmd.none )
 
+
+-- GRAPHQL
 
 query : UserId -> SelectionSet User RootQuery
 query userId =

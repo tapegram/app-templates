@@ -6,6 +6,8 @@ use crate::routes::{graphql_handler, graphql_playground, health};
 use async_graphql::{EmptySubscription, Schema};
 use axum::{extract::Extension, routing::get, Router, Server};
 use serde::Deserialize;
+use tower::ServiceBuilder;
+use tower_http::cors::CorsLayer;
 
 mod model;
 mod routes;
@@ -46,11 +48,20 @@ async fn main() {
     let app = Router::new()
         .route("/", get(graphql_playground).post(graphql_handler))
         .route("/health", get(health))
-        // You somehow need your compiled schema accessible in your endpoint.
-        // By providing axum with a layer, you do exactly this.
-        // The schema you build a few lines above is now passed into axum so that
-        // you can access it within your GraphQL handler.
-        .layer(Extension(schema));
+        .layer(
+            // Use tower/tower-http middleware to inject our shared state into our routes
+            // Based on example: https://github.com/tokio-rs/axum/blob/dea36db400f27c025b646e5720b9a6784ea4db6e/examples/key-value-store/src/main.rs
+            ServiceBuilder::new()
+                // You somehow need your compiled schema accessible in your endpoint.
+                // By providing axum with a layer, you do exactly this.
+                // The schema you build a few lines above is now passed into axum so that
+                // you can access it within your GraphQL handler.
+                .layer(Extension(schema))
+                .layer(
+                    CorsLayer::permissive(), // CorsLayer::new()
+                )
+                .into_inner(),
+        );
 
     Server::bind(&"0.0.0.0:8000".parse().unwrap())
         .serve(app.into_make_service())

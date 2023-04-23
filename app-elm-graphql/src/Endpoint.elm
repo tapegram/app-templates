@@ -15,4 +15,4 @@ unwrap (Endpoint url) =
 
 graphQLUrl : Endpoint
 graphQLUrl =
-    Endpoint "http://localhost:3000/"
+    Endpoint "http://localhost:8000/"
