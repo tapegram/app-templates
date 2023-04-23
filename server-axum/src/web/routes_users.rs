@@ -1,13 +1,22 @@
-use axum::{Router, routing::{post,put}, Extension, http::{StatusCode}, Json, extract::Path, response::{Response, IntoResponse}};
+use axum::{
+    extract::Path,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::{post, put},
+    Extension, Json, Router,
+};
 use rand::Rng;
 
-use crate::{model::{User, UserResponse, CreateUserRequest, UpdateUsersRequest, SharedState}, ErrorResponse};
+use crate::{
+    model::{CreateUserRequest, SharedState, UpdateUsersRequest, User, UserResponse},
+    ErrorResponse,
+};
 
-pub fn routes(s: SharedState ) -> Router {
+pub fn routes(s: SharedState) -> Router {
     Router::new()
-    .route("/users", post(create_user_handler).get(get_users_handler))
-    .route("/users/:id", put(update_user_handler).get(get_user_handler))
-    .with_state(s)
+        .route("/users", post(create_user_handler).get(get_users_handler))
+        .route("/users/:id", put(update_user_handler).get(get_user_handler))
+        .with_state(s)
 }
 
 async fn get_users_handler(

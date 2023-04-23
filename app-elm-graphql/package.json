@@ -1,0 +1,9 @@
+{
+  "name": "app-elm-graphql",
+  "version": "1.0.0",
+  "description": "Elm template using graphql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "api": "elm-graphql http://localhost:8000/ --base UsersAPI"
+  }
+}

@@ -1,5 +1,5 @@
 use async_graphql::EmptySubscription;
-use async_graphql::{Context, Object, Result, Schema, SimpleObject};
+use async_graphql::{Context, Error, Object, Result, Schema, SimpleObject};
 use rand::Rng;
 
 use crate::SharedState;
@@ -41,6 +41,17 @@ impl QueryRoot {
         let responses: Vec<_> = users.iter().map(|user| User::from(user)).collect();
         Ok(responses)
     }
+
+    async fn user(&self, _ctx: &Context<'_>, id: u32) -> Result<User> {
+        let users = &_ctx.data::<SharedState>().unwrap().read().unwrap().users;
+        let user = match users.get(&id) {
+            Some(u) => u,
+            None => return Err(Error::new("User does not exit")),
+        };
+
+        let response = User::from(user);
+        Ok(response)
+    }
 }
 
 #[Object]
@@ -59,6 +70,7 @@ impl MutationRoot {
             password: password.clone(),
         };
 
+        // We should explicitly handle a possible failure instead of exploding
         let users = &_ctx
             .data::<SharedState>()
             .unwrap()
