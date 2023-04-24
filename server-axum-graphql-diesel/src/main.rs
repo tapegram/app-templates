@@ -1,6 +1,5 @@
-use std::collections::HashMap;
 use std::env;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use crate::model::{MutationRoot, QueryRoot};
 use crate::routes::{graphql_handler, graphql_playground, health};
@@ -47,17 +46,9 @@ pub fn get_connection_pool() -> Pool<AsyncPgConnection> {
     pool
 }
 
-#[derive(Default)]
-struct State {
-    users: HashMap<u32, User>,
-}
-
-// Wrapping the state in a shared type so it can be shared across threads
-type SharedState = Arc<RwLock<State>>;
-
 #[tokio::main]
 async fn main() {
-    let pg_pool = get_connection_pool();
+    let pg_pool = Arc::new(get_connection_pool());
     let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(pg_pool)
         .finish();

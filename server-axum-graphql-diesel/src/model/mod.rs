@@ -1,9 +1,9 @@
-use crate::db_models::{get_users, PgPool, UserRecord};
-use async_graphql::EmptySubscription;
-use async_graphql::{Context, Error, Object, Result, Schema, SimpleObject};
-use rand::Rng;
+use std::sync::Arc;
 
-use crate::SharedState;
+use crate::db_models::{create_user as new_user, get_user, get_users, PgPool, UserRecord};
+use async_graphql::EmptySubscription;
+use async_graphql::{Context, Object, Result, Schema, SimpleObject};
+
 use crate::User as CoreUser;
 
 pub(crate) type ServiceSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
@@ -56,26 +56,19 @@ impl From<&User> for UserRecord {
     }
 }
 
-#[Object] // Macro wires Rust struct together with the underlying framework logic of
-          // async-graphql
-          //
-          // Implementation contains all queries your service supports
+#[Object]
 impl QueryRoot {
     async fn users(&self, _ctx: &Context<'_>) -> Result<Vec<User>> {
-        let pg_pool = _ctx.data::<&mut PgPool>().unwrap();
-        let users: Vec<UserRecord> = get_users(&mut pg_pool).await;
-        let responses: Vec<_> = users.iter().map(|user| User::from(user)).collect();
+        let pg_pool = _ctx.data::<Arc<PgPool>>().unwrap();
+        let users: Vec<UserRecord> = get_users(&mut pg_pool.get().await.expect("")).await;
+        let responses: Vec<User> = users.iter().map(|user| User::from(user)).collect();
         Ok(responses)
     }
 
-    async fn user(&self, _ctx: &Context<'_>, id: u32) -> Result<User> {
-        let users = &_ctx.data::<SharedState>().unwrap().read().unwrap().users;
-        let user = match users.get(&id) {
-            Some(u) => u,
-            // None => return Err(Error::new("User does not exit")),
-        };
-
-        let response = User::from(user);
+    async fn user(&self, _ctx: &Context<'_>, id: i32) -> Result<User> {
+        let pg_pool = _ctx.data::<Arc<PgPool>>().unwrap();
+        let user = get_user(&mut pg_pool.get().await.expect(""), &id).await;
+        let response = User::from(&user);
         Ok(response)
     }
 }
@@ -89,22 +82,16 @@ impl MutationRoot {
         password: String,
         email: String,
     ) -> Result<User> {
-        let new_user = CoreUser {
-            id: rand::thread_rng().gen(),
-            name: name.clone(),
-            email: email.clone(),
-            password: password.clone(),
-        };
+        let pg_pool = _ctx.data::<Arc<PgPool>>().unwrap();
 
-        // We should explicitly handle a possible failure instead of exploding
-        let _users = &_ctx
-            .data::<SharedState>()
-            .unwrap()
-            .write()
-            .unwrap()
-            .users
-            .insert(new_user.id, new_user.clone());
+        let user = new_user(
+            &mut pg_pool.get().await.expect(""),
+            &name,
+            &email,
+            &password,
+        )
+        .await;
 
-        Ok(User::from(&new_user))
+        Ok(User::from(&user))
     }
 }

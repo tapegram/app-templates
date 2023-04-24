@@ -22,8 +22,12 @@ struct NewUser<'a> {
 
 pub type PgPool = Pool<AsyncPgConnection>;
 
-pub async fn create_user(pool: &mut PgPool, name: &str, email: &str, password: &str) -> UserRecord {
-    let mut conn = pool.get().await.expect("Cant get connection from pool");
+pub async fn create_user(
+    conn: &mut AsyncPgConnection,
+    name: &str,
+    email: &str,
+    password: &str,
+) -> UserRecord {
     let new_user = NewUser {
         name,
         email,
@@ -32,7 +36,7 @@ pub async fn create_user(pool: &mut PgPool, name: &str, email: &str, password: &
 
     let rows: Vec<UserRecord> = diesel::insert_into(users::table)
         .values(&new_user)
-        .get_results(&mut conn)
+        .get_results(conn)
         .await
         .expect("Failed to create user");
 
@@ -42,19 +46,22 @@ pub async fn create_user(pool: &mut PgPool, name: &str, email: &str, password: &
     }
 }
 
-pub async fn get_users(pool: &mut PgPool) -> Vec<UserRecord> {
-    let mut conn = pool.get().await.expect("Cant get connection from pool");
+pub async fn get_users(conn: &mut AsyncPgConnection) -> Vec<UserRecord> {
     users::table
-        .load::<UserRecord>(&mut conn)
+        .load::<UserRecord>(conn)
         .await
         .expect("Error loading users")
 }
 
-pub async fn get_user(pool: &mut PgPool, user_id: &i32) -> Vec<UserRecord> {
-    let mut conn = pool.get().await.expect("Cant get connection from pool");
-    users::table
+pub async fn get_user(conn: &mut AsyncPgConnection, user_id: &i32) -> UserRecord {
+    let rows: Vec<UserRecord> = users::table
         .filter(id.eq(user_id))
-        .load::<UserRecord>(&mut conn)
+        .load::<UserRecord>(conn)
         .await
-        .expect("Error loading users")
+        .expect("Error loading users");
+
+    match rows.as_slice() {
+        [record] => record.clone(),
+        _ => panic!("Did not get back exactly one created record (either too few or too many)"),
+    }
 }
