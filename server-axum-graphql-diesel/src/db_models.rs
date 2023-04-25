@@ -1,3 +1,5 @@
+//use std::sync::Arc;
+
 use crate::db_schema::users::{self, id};
 use diesel::{query_dsl::methods::FilterDsl, ExpressionMethods, Insertable, Queryable};
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection, RunQueryDsl};
@@ -21,6 +23,36 @@ struct NewUser<'a> {
 }
 
 pub type PgPool = Pool<AsyncPgConnection>;
+
+pub async fn delete_user(conn: &mut AsyncPgConnection, user_id: i32) -> UserRecord {
+    // Load the user to be deleted
+    let rows: Vec<UserRecord> = users::table
+        .filter(id.eq(user_id))
+        .load::<UserRecord>(conn)
+        .await
+        .expect("Error loading users");
+
+    // Check that we got exactly one user
+    let user = match rows.as_slice() {
+        [record] => record.clone(),
+        _ => panic!("Did not get back exactly one created record (either too few or too many)"),
+    };
+
+    // Delete the user from the database
+    let deleted_rows = diesel::delete(users::table.filter(id.eq(user_id)))
+        .execute(conn)
+        .await
+        .expect("Failed to delete user");
+
+    // If the user was deleted, return it; otherwise, return None
+    match deleted_rows {
+        0 => panic!("User with id {} was not found or could not be deleted", user_id),
+        1 => user,
+        _ => panic!("Deleted {} rows when trying to delete user with id {}", deleted_rows, user_id),
+    }
+    
+}
+
 
 pub async fn create_user(
     conn: &mut AsyncPgConnection,

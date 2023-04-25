@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::db_models::{create_user as new_user, get_user, get_users, PgPool, UserRecord};
+use crate::db_models::{create_user as new_user, delete_user, get_user, get_users, PgPool, UserRecord};
 use async_graphql::EmptySubscription;
 use async_graphql::{Context, Object, Result, Schema, SimpleObject};
 
@@ -75,6 +75,16 @@ impl QueryRoot {
 
 #[Object]
 impl MutationRoot {
+    async fn delete_user(
+        &self,
+        _ctx: &Context<'_>,
+        id: i32,
+    ) -> Result<User> {
+        let pg_pool = _ctx.data::<Arc<PgPool>>().unwrap();
+        let deleted_user = delete_user(&mut pg_pool.get().await.unwrap(), id).await;
+        Ok(User::from(&deleted_user))
+    }
+
     async fn create_user(
         &self,
         _ctx: &Context<'_>,
